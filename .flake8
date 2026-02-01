@@ -1,0 +1,46 @@
+[flake8]
+# Max line length to match black formatting (optional)
+max-line-length = 256
+
+# Ignore specific rules:
+# E203: whitespace before ':' (black-compatible)
+# W503: line break before binary operator (black-compatible)
+# D100-D107: Ignore missing docstring checks for now (customize as needed)
+# ANN: Skip type hinting enforcement if too aggressive
+ignore = 
+    E203, 
+    W503,
+    D100, D101, D102, D103, D104, D105, D106, D107,
+    D401
+    F403, F401
+
+# Enable specific flake8 plugins if used
+# (Uncomment plugins you want to use, see notes below)
+extend-select = 
+    B,      # flake8-bugbear
+    C90,    # flake8-cognitive-complexity
+    I       # flake8-import-order (for consistent imports)
+
+# Exclude these paths from linting
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    venv,
+    .eggs,
+    *.egg,
+    notebooks,
+    tests/data
+
+# Maximum allowed cognitive complexity per function
+max-complexity = 10
+
+# Show source code of the error
+show-source = true
+
+# Count total errors
+count = true
+
+# Enable flake8-docstrings if you want strict doc checks (optional)
+# docstring-convention = google  # or numpy, or pep257
