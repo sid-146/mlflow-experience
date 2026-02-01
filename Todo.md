@@ -1,0 +1,5 @@
+- Add support for better logging
+- Add support for other source of data ingestion
+- Add support for multiple file format
+- Add support for cloud storage
+- Finalize the config file structure
