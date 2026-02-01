@@ -1,0 +1,14 @@
+experiment:
+  name: demo
+artifacts:
+  location: ./mlruns/demo
+run:
+  name : demo_run
+model: 
+  type: linear
+data:
+  extn: csv
+  train: ./data/demo.csv
+  test: ./data/demo.csv
+  target_column: SalePrice
+  test_size: 0.2

@@ -1,0 +1,3 @@
+ALTER DATABASE mlflowdb OWNER TO mlflow;
+
+GRANT ALL PRIVILEGES ON DATABASE mlflowdb TO mlflow;
