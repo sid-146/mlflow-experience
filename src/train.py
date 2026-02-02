@@ -4,6 +4,7 @@ import mlflow
 
 from src.core.registry import MODEL_REGISTRY
 from src.utils.data_loader import config_loader
+from src.pipelines.train_pipeline import Trainer
 
 
 def run(*args, **kwargs):
