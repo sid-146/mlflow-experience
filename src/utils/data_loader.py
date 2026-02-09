@@ -12,9 +12,6 @@ def config_loader(config_path: str) -> dict:
     return config
 
 
-def load_data(file_path: str, extn: str) -> pd.DataFrame:
-    func = DATA_READER_REGISTRY.get(extn)
-    if not func:
-        raise ValueError(f"Unsupported file extension: {extn}")
-    df = func(file_path)
-    return df
+def get_extn(path: str) -> str:
+    extn = path.split(".")[-1]
+    return extn
