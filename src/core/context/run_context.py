@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator, errors
 
+from src.core.constants.file_types import FILE_TYPES
+
 
 class ProjectContext(BaseModel):
     name: str
@@ -21,6 +23,29 @@ class ProjectContext(BaseModel):
                 "Invalid value passed. It should 'prod', 'dev' or 'test'."
             )
 
+
+class SourceContext(BaseModel):
+    type: FILE_TYPES
+    path: str
+
+
+class DataContext(BaseModel):
+    name: str
+    source: SourceContext
+
+
+class ExperimentContext(BaseModel):
+    objective: str
+    # baseline_run_id:str
+    # promoted_from_experiment: bool
+    notes: str
+
+
+class HandleMissingValues(BaseModel):
+    
+
+class PreprocessingContext(BaseModel):
+    missing_values: 
 
 class RunContext(BaseModel):
     project: ProjectContext

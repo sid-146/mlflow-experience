@@ -1,0 +1,2 @@
+class LoaderError(BaseException):
+    raise
