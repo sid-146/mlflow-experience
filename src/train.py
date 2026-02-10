@@ -4,16 +4,18 @@ import mlflow
 
 from src.core.registry import MODEL_REGISTRY
 from src.utils.data_loader import config_loader
+from src.core import RunContext
 from src.pipelines.train_pipeline import Trainer
 
 
 def run(*args, **kwargs):
-    print(kwargs)
+    context = RunContext.populate(config)
+    print(context.model_dump())
     return
     experiment = mlflow.set_experiment(experiment_name=kwargs["experiment"])
 
     print("Starting Run...")
-    with mlflow.start_run(run_name=kwargs["run"]) as run:
+    with mlflow.start_run(run_name=kwargs["run"]):
         print("Added experiment:", experiment.experiment_id)
         mlflow.log_param("model_type", kwargs["model"])
 
