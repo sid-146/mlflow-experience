@@ -2,7 +2,7 @@ import yaml
 import pandas as pd
 
 
-from src.core.registry import DATA_READER_REGISTRY
+from core.registry import DATA_READER_REGISTRY
 
 
 def config_loader(config_path: str) -> dict:

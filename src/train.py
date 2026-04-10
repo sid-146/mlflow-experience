@@ -2,15 +2,17 @@ import argparse
 
 import mlflow
 
-from src.core.registry import MODEL_REGISTRY
-from src.utils.data_loader import config_loader
-from src.core import RunContext
-from src.pipelines.train_pipeline import Trainer
+from core.registry import MODEL_REGISTRY
+from utils.data_loader import config_loader
+from core import RunContext
+from core.logging.logger import console
+from pipelines.train_pipeline import Trainer
 
 
 def run(*args, **kwargs):
+    console.debug("Reading data from config")
     context = RunContext.populate(config)
-    print(context.model_dump())
+    console.info(context.model_dump())
     return
     experiment = mlflow.set_experiment(experiment_name=kwargs["experiment"])
 

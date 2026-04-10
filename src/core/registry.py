@@ -1,6 +1,6 @@
 from typing import Callable, Dict
 
-from src.models.linear import build_model as build_linear_model
+from models.linear import build_model as build_linear_model
 
 import pandas as pd
 

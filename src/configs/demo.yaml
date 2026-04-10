@@ -7,6 +7,14 @@ project:
   environment: production
   description: Predict customer churn for telecom users
 
+
+# ==============================
+# MLFlow METADATA
+# ==============================
+mlflow:
+  experiment_name: customer_churn_experiments
+  experiment_id: 
+
 # ==============================
 # DATA CONFIGURATION
 # ==============================

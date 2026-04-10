@@ -2,12 +2,12 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator, errors, model_validator
 
-from src.core.context.policies import (
+from core.context.policies import (
     CategoricalMissingPolicy,
     NumericMissingPolicy,
     SourcePolicy,
 )
-from src.core.constants.constants import (
+from core.constants.constants import (
     FILE_TYPES,
     CATEGORICAL_MISSING_STRATEGY,
     NUMERIC_MISSING_STRATEGY,
@@ -54,10 +54,16 @@ class PreprocessingContext(BaseModel):
     missing_values: HandleMissingValues
 
 
+class MlFlowContext(BaseModel):
+    experiment_name: str
+    experiment_id: str
+
+
 class RunContext(BaseModel):
     project: ProjectContext
     data: DataContext
     experiment: ExperimentContext
+    mlflow: MlFlowContext
     # preprocessing: PreprocessingContext
 
     @classmethod

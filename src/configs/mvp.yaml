@@ -1,0 +1,59 @@
+project:
+  name: customer_churn_prediction
+  owner: data_science_team
+  environment: production
+  description: Predict customer churn for telecom users
+
+mlflow:
+  experiment_name: customer_churn_experiments
+  experiment_id: NA
+  track_params: true
+  track_metrics: true
+  track_artifacts:
+    - feature_config
+    - preprocessing_objects
+    - model
+
+  tags:
+    project: churn
+    stage: production
+    owner: data_science_team
+
+
+data:
+  dataset_name: telecom_churn_v1
+  id_column: customer_id
+  
+  source:
+    type: csv
+    path: data/telecom_churn.csv
+
+  target:
+    column: churn
+    positive_class: "Yes"
+
+
+preprocessing:
+  # This are applied over all columns
+  # Todo: Add column level processing in future
+  missing_values: mean
+  categorical_encoding: one_hot
+
+features:
+  scaling: standard
+
+model:
+  type: logistic_regression
+  hyperparameters:
+    C: 1.0
+    max_iter: 100
+
+
+training:
+  objective: binary:logistic
+
+
+evaluation:
+  metrics:
+    - accuracy
+    - f1

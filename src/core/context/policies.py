@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 
-from src.core.constants.constants import FILE_TYPES
-from src.core.constants.constants import (
+from core.constants.constants import FILE_TYPES
+from core.constants.constants import (
     NUMERIC_MISSING_STRATEGY,
     CATEGORICAL_MISSING_STRATEGY,
 )
