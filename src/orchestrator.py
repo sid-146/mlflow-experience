@@ -4,6 +4,7 @@ from src.core.context.contexts import RunContext
 from src.core.logging.logger import console
 from src.core.handler.data.loader import DataLoader
 from src.core.handler.data.splitter import DataSplitter
+from src.core.trackers.mlflow_tracker import MLflowTracker
 
 
 class Orchestrator:
@@ -11,15 +12,18 @@ class Orchestrator:
         self.context = context
         self.data_loader = DataLoader(context=context)
         self.data_splitter = DataSplitter(context=context)
+        self.mlflow_tracker = MLflowTracker(context=context)
 
     def build(self):
         console.info(
             f"Starting pipeline build for model : {self.context.mlflow.experiment_name}"
         )
+        self.mlflow_tracker.start_run()
         console.debug("Reading data from source...")
 
         # Read Data from source.
         self.data_loader.load_data()
+
         console.debug(
             f"Data loaded successfully with shape: {self.data_loader.data.shape}"
         )
@@ -36,6 +40,8 @@ class Orchestrator:
                 y=self.data_loader.y,
             )
 
+        # temp code following
+        # self.mlflow_tracker.log_artifact(self.context.dataset.train.path, "train_data.csv")
         return
 
     # Following are placeholder they can be removed.
