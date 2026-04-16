@@ -52,6 +52,9 @@ class ProjectContext(BaseModel):
 class MlFlowContext(BaseModel):
     experiment_name: str
     experiment_id: Optional[str] = None
+    # Todo: This is needed as not able to set backend uri in mlflow server command in compose.yaml
+    # need to find solution
+    tracking_uri: Optional[str] = None
     track_params: bool = True
     track_metrics: bool = True
     track_artifacts: List[str] = []
