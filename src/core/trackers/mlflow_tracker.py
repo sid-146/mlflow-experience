@@ -7,6 +7,7 @@ from src.core.logging.logger import console
 class MLflowTracker:
     # Todo: Think if it can be implemented better
     # Todo: Get more core control over mlflow client and its functionalities, currently it is just a wrapper around mlflow client.
+    # Todo: Add mlflow Trace and other thing
     def __init__(self, context: RunContext):
         self.context = context
         self.experiment_name = context.mlflow.experiment_name or "default"
@@ -27,7 +28,7 @@ class MLflowTracker:
         else:
             console.debug("Found existing experiment.")
         mlflow.set_experiment(self.experiment_name)
-        mlflow.start_run()
+        self.run = mlflow.start_run()
 
     def log_params(self, params: dict):
         mlflow.log_params(params)

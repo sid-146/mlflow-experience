@@ -40,8 +40,31 @@ class Orchestrator:
                 y=self.data_loader.y,
             )
 
+        # Todo: Start from here
+        # Todo: Build Pipeline to handle following functions.
+        # Todo: Input will be the training set and output will be the processed training set, and same for test set but different processing.
+        # Schema Validation
+        # Rename Columns
+        # Type Casting
+        # Handle Missing Value
+        # Cleaning (eg. America -> USA, month to month -> month_to_month)
+        # Handle Outliers
+        # Filters remove value based on condition
+        # Feature Engineering
+        # Encoding
+        # Scaling
+        # Transformation
+
+        # Build Pipeline for sklearn for preprocessing.
+
         # temp code following
         # self.mlflow_tracker.log_artifact(self.context.dataset.train.path, "train_data.csv")
+
+        # Upload logs file to artifacts
+        self.mlflow_tracker.log_artifact(
+            console.handlers[1].baseFilename,
+            f"logs/{self.mlflow_tracker.run.info.run_name}.log",
+        )
         return
 
     # Following are placeholder they can be removed.
