@@ -20,17 +20,25 @@ mlflow:
     owner: data_science_team
 
 
-data:
+dataset:
   dataset_name: telecom_churn_v1
-  id_column: customer_id
+  random_state: 52
+  # test_size: .3
   
-  source:
+  # todo: Add train test split ratio in future if test dataset is not provided.
+  train:
     type: csv
-    path: data/telecom_churn.csv
+    path: data/raw/churn_train.csv
+    id_column: CustomerID
+    target_column: Churn
+    positive_class: 1
 
-  target:
-    column: churn
-    positive_class: "Yes"
+  # test:
+  #   type: csv
+  #   path: data/raw/churn_test.csv
+  #   id_column: CustomerID
+  #   target_column: Churn
+  #   positive_class: 1
 
 
 preprocessing:

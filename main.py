@@ -1,26 +1,18 @@
 import argparse
 
-import mlflow
+from src.core.handler.config.loader import config_loader
+from src.core import RunContext
+from src.core.logging.logger import console
 
-from core.registry import MODEL_REGISTRY
-from utils.data_loader import config_loader
-from core import RunContext
-from core.logging.logger import console
-from pipelines.train_pipeline import Trainer
+from src.orchestrator import Orchestrator
 
 
 def run(*args, **kwargs):
     console.debug("Reading data from config")
-    context = RunContext.populate(config)
+    context = RunContext.from_yaml_dict(config)
+    orchestrator = Orchestrator(context)
+    orchestrator.build()
     console.info(context.model_dump())
-    return
-    experiment = mlflow.set_experiment(experiment_name=kwargs["experiment"])
-
-    print("Starting Run...")
-    with mlflow.start_run(run_name=kwargs["run"]):
-        print("Added experiment:", experiment.experiment_id)
-        mlflow.log_param("model_type", kwargs["model"])
-
     return
 
 
@@ -30,10 +22,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--config", type=str, required=True, help="Config File Path")
+    parser.add_argument(
+        "--logging-level", type=str, required=False, help="Debug Level", default="INFO"
+    )
     # parser.add_argument("--model", type=str, required=True)
     # parser.add_argument("--run", type=str, required=True, help="Run Name")
 
     args = parser.parse_args()
     config = config_loader(args.config)
+    console.setLevel(args.logging_level)
+    print()
+    print(config)
+    print()
 
     run(**config)
