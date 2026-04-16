@@ -24,8 +24,9 @@ class ColoredFormatter(logging.Formatter):
         original_levelname = record.levelname
 
         if original_levelname in self.COLORS:
-            record.levelname = f"{self.COLORS[original_levelname]} \
-                {original_levelname}{self.RESET}"
+            record.levelname = (
+                f"{self.COLORS[original_levelname]}{original_levelname:<8}{self.RESET}"
+            )
 
         message = super().format(record)
 

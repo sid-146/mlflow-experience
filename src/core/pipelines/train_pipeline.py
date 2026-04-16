@@ -19,5 +19,3 @@ class Trainer(BasePipeline):
 
         print("Running training pipeline...")
         self.pipeline = self.pipeline.fit(self.X_train, self.Y_train)
-        
-    

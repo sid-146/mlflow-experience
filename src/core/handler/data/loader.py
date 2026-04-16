@@ -50,7 +50,7 @@ class DataLoader:
             self._load_test_data()
         else:
             console.info(
-                "Test dataset configuration not provided\nskipping test dataset loading."
+                "Test dataset configuration not provided. Skipping test dataset loading."
             )
 
         console.info("Data Loading complete.")
