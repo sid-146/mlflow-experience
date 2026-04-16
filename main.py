@@ -12,7 +12,6 @@ def run(*args, **kwargs):
     context = RunContext.from_yaml_dict(config)
     orchestrator = Orchestrator(context)
     orchestrator.build()
-    console.info(context.model_dump())
     return
 
 
@@ -31,8 +30,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = config_loader(args.config)
     console.setLevel(args.logging_level)
-    print()
-    print(config)
-    print()
-
     run(**config)
