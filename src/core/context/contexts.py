@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, Dict, Optional, Any
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 
-from src.core.constants.registry import PreprocessingType
+from src.core.constants.registry import PreprocessingRegistry
 from src.core.context.policies import (
     DatasetPolicy,
     ScalingPolicy,
@@ -81,7 +81,7 @@ class DataContext(BaseModel):
 # ==============================
 class PreprocessingContext(BaseModel):
     name: str
-    type: str
+    type: PreprocessingRegistry
     params: Any = Field(default_factory=dict)
 
     class Config:
@@ -89,13 +89,13 @@ class PreprocessingContext(BaseModel):
 
     def cast_params(self):
         """
-        Convert raw params into typed models based on type
+        Convert raw params into typed models based on preprocessing type
         """
-        model = getattr(PreprocessingType, self.type, None)
-        if model is None:
+        policy_class = self.type.policy_class
+        if policy_class is None:
             raise ValueError(f"Unsupported preprocessing type: {self.type}")
 
-        self.params = model(**self.params)
+        self.params = policy_class(**self.params)
         return self
 
 
@@ -103,7 +103,7 @@ class PreprocessingContext(BaseModel):
 # FEATURES
 # ==============================
 class FeatureContext(BaseModel):
-    scaling: Optional[ScalingStrategy] = None
+    scaling: Optional[str] = None
 
 
 # ==============================
@@ -153,3 +153,5 @@ class RunContext(BaseModel):
         for step in self.preprocessing:
             step.cast_params()
         return self
+
+    model_config = ConfigDict(use_enum_values=True)
