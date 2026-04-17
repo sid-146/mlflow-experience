@@ -1,22 +1,5 @@
 from src.core.context.contexts import RunContext
-from src.core.pipelines.transformers import (
-    RenameColumnsTransformer,
-    MissingValueTransformer,
-    CleaningTransformer,
-    FilterTransformer,
-    ColumnTransformer,
-)
-
-
-# Todo: Move this to registry and make it dynamic based on configuration
-STEP_REGISTRY = {
-    "rename_columns": RenameColumnsTransformer,
-    # "type_cast": TypeCastTransformer,
-    "missing_values": MissingValueTransformer,
-    "cleaning": CleaningTransformer,
-    # "outliers": OutlierTransformer,
-    "filter": FilterTransformer,
-}
+from src.core.logging.logger import console
 
 
 class PreprocessingPipeline:
@@ -24,5 +7,14 @@ class PreprocessingPipeline:
         self.context = context
         self.steps = []
 
-    def build(self):
-        return
+    def build(self, X):
+        for step in self.context.preprocessing:
+            transformer = step.type.transformer_class
+            if transformer is None:
+                console.warning(
+                    f"{step.type} is not mapped in Preprocess registry, skipping..."
+                )
+            else:
+                self.steps.append((step.name, transformer))
+
+        print(self.steps)
