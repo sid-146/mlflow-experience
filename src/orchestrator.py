@@ -1,9 +1,10 @@
 import pandas as pd
 
 from src.core.context.contexts import RunContext
-from src.core.logging.logger import console
 from src.core.handler.data.loader import DataLoader
 from src.core.handler.data.splitter import DataSplitter
+from src.core.logging.logger import console
+from src.core.pipelines.preprocessing import PreprocessingPipeline
 from src.core.trackers.mlflow_tracker import MLflowTracker
 
 
@@ -43,6 +44,11 @@ class Orchestrator:
         # Todo: Start from here
         # Todo: Build Pipeline to handle following functions.
         # Todo: Input will be the training set and output will be the processed training set, and same for test set but different processing.
+        pipeline = PreprocessingPipeline(
+            context=self.context,
+            # mlflow_tracker=self.mlflow_tracker,
+        )
+        pipeline.build(self.data_loader.X)
         # Schema Validation
         # Rename Columns
         # Type Casting
