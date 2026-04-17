@@ -1,16 +1,23 @@
 from enum import Enum
 from typing import List, Dict, Optional, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from src.core.context.policies import DatasetPolicy
+from src.core.constants.registry import PreprocessingType
+from src.core.context.policies import (
+    DatasetPolicy,
+    ScalingPolicy,
+    EncodingPolicy,
+    MissingValuePolicy,
+    TypeCastPolicy,
+    RenamePolicy,
+)
 
 
 # ==============================
 # ENUMS (Optional but recommended)
+# Todo: Move to registry
 # ==============================
-
-
 class ModelType(str, Enum):
     logistic_regression = "logistic_regression"
     random_forest = "random_forest"
@@ -35,8 +42,6 @@ class ScalingStrategy(str, Enum):
 # ==============================
 # PROJECT
 # ==============================
-
-
 class ProjectContext(BaseModel):
     name: str
     owner: str
@@ -47,8 +52,6 @@ class ProjectContext(BaseModel):
 # ==============================
 # MLFLOW
 # ==============================
-
-
 class MlFlowContext(BaseModel):
     experiment_name: str
     experiment_id: Optional[str] = None
@@ -62,10 +65,8 @@ class MlFlowContext(BaseModel):
 
 
 # ==============================
-# DATA
+# Dataset Context
 # ==============================
-
-
 class DataContext(BaseModel):
     dataset_name: str
     random_state: int = Field(..., ge=0)
@@ -78,18 +79,29 @@ class DataContext(BaseModel):
 # ==============================
 # PREPROCESSING
 # ==============================
-
-
 class PreprocessingContext(BaseModel):
-    missing_values: Optional[MissingValueStrategy] = None
-    categorical_encoding: Optional[EncodingStrategy] = None
+    name: str
+    type: str
+    params: Any = Field(default_factory=dict)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def cast_params(self):
+        """
+        Convert raw params into typed models based on type
+        """
+        model = getattr(PreprocessingType, self.type, None)
+        if model is None:
+            raise ValueError(f"Unsupported preprocessing type: {self.type}")
+
+        self.params = model(**self.params)
+        return self
 
 
 # ==============================
 # FEATURES
 # ==============================
-
-
 class FeatureContext(BaseModel):
     scaling: Optional[ScalingStrategy] = None
 
@@ -97,8 +109,6 @@ class FeatureContext(BaseModel):
 # ==============================
 # MODEL
 # ==============================
-
-
 class ModelContext(BaseModel):
     type: ModelType
     hyperparameters: Dict[str, Any] = {}
@@ -107,8 +117,6 @@ class ModelContext(BaseModel):
 # ==============================
 # TRAINING
 # ==============================
-
-
 class TrainingContext(BaseModel):
     objective: str
 
@@ -116,8 +124,6 @@ class TrainingContext(BaseModel):
 # ==============================
 # EVALUATION
 # ==============================
-
-
 class EvaluationContext(BaseModel):
     metrics: List[str]
 
@@ -125,13 +131,11 @@ class EvaluationContext(BaseModel):
 # ==============================
 # ROOT CONTEXT
 # ==============================
-
-
 class RunContext(BaseModel):
     project: ProjectContext
     mlflow: MlFlowContext
     dataset: DataContext
-    preprocessing: PreprocessingContext
+    preprocessing: List[PreprocessingContext]
     features: FeatureContext
     model: ModelContext
     training: TrainingContext
@@ -143,3 +147,9 @@ class RunContext(BaseModel):
         Entry point for converting YAML → strongly typed config
         """
         return cls.model_validate(config)
+
+    @model_validator(mode="after")
+    def cast_all_preprocessing_params(self):
+        for step in self.preprocessing:
+            step.cast_params()
+        return self
