@@ -41,11 +41,56 @@ dataset:
   #   positive_class: 1
 
 
-preprocessing:
-  # This are applied over all columns
-  # Todo: Add column level processing in future
-  missing_values: mean
-  categorical_encoding: one_hot
+pipeline:
+  - name: rename_cols
+    type: rename_columns
+    params:
+      mapping:
+        cust_id: customer_id
+        "Contract Length": contract_length
+
+  - name: cast_types
+    type: type_cast
+    params:
+      columns:
+        age: int
+        income: float
+
+  # Todo: Add column wise different strategy for missing value imputation in future.
+  # Currently using mean for every numerical column
+  - name: missing
+    type: missing_values
+    params:
+      strategy: mean
+
+  # Todo: Add column wise different strategy for missing value imputation in future.
+  - name: cleaning
+    type: cleaning
+    params:
+      replacements:
+        country:
+          America: USA
+
+  # Todo: Add column wise different strategy for missing value imputation in future.
+  # Currently using mean for every numerical column
+  - name: encoding
+    type: encoding
+    params:
+      Gender:
+        method: onehot
+
+  - name: encoding
+    type: encoding
+    params:
+      contract_length: ## This names should be the one which are renamed.
+        method: ordinal
+
+  # Todo: Add column wise different strategy for missing value imputation in future.
+  # Currently using standard scaler for every numerical column
+  - name: scaling
+    type: scaling
+    params:
+      method: standard
 
 features:
   scaling: standard
