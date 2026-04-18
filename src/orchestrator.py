@@ -48,20 +48,19 @@ class Orchestrator:
             context=self.context,
             # mlflow_tracker=self.mlflow_tracker,
         )
-        pipeline.build(self.data_loader.X)
-        # Schema Validation
-        # Rename Columns
-        # Type Casting
-        # Handle Missing Value
-        # Cleaning (eg. America -> USA, month to month -> month_to_month)
-        # Handle Outliers
-        # Filters remove value based on condition
-        # Feature Engineering
-        # Encoding
-        # Scaling
-        # Transformation
+        console.info("Building preprocessing pipeline...")
+        # Todo: Add mlflow tracking in pipeline
+        train_pipeline = pipeline.build()
+        console.info("Preprocessing pipeline steps added successfully.")
 
-        # Build Pipeline for sklearn for preprocessing.
+        # Todo: Feature Engineering to be added here only then fit_transform can be done.
+
+        X = train_pipeline.fit_transform(
+            self.data_loader.X,
+            self.data_loader.y,
+        )
+        console.info("Preprocessing transformation completed.")
+        print(X)
 
         # temp code following
         # self.mlflow_tracker.log_artifact(self.context.dataset.train.path, "train_data.csv")
