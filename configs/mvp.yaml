@@ -47,54 +47,70 @@ preprocessing:
     type: rename
     params:
       mapping:
-        cust_id: customer_id
+        CustomerID : customer_id
+        Usage Frequency: usage_frequency
+        Support Calls: support_calls
+        Payment Delay: payment_delay
+        subscription_type: subscription_type
         Contract Length: contract_length
+        Total Spend: total_spend
+        Last Interaction: last_interaction
+
+
 
   # 2. Type casting
   - name: cast_types
     type: type_cast
     params:
       columns:
-        - name: age
+        - name: Age
           dtype: int
 
-        - name: income
-          dtype: float
+        - name: Gender
+          dtype: str
 
-        - name: signup_date
-          dtype: datetime
-          format: "%Y-%m-%d"
+        - name: Tenure
+          dtype: int
+
+    # Not adding all columns for now as pandas can infer them correctly.
+
 
   # 3. Missing values (column-wise strategies)
   - name: handle_missing
     type: missing
     params:
       columns:
-        - name: age
+        - name: Age
           strategy: mean
 
-        - name: income
-          strategy: median
+        # - name: income
+        #   strategy: median
 
-        - name: gender
+        - name: Gender
           strategy: mode
 
-        - name: country
-          strategy: constant
-          fill_value: "Unknown"
+        # - name: country
+        #   strategy: constant
+        #   fill_value: "Unknown"
 
   # 4. Encoding
   - name: encode_features
     type: encoding
     params:
       columns:
-        - name: gender
-          strategy: one_hot
+        # Todo: Need to add transformer for ordinal
+        - name: Gender
+          strategy: ordinal
+          order: ProviderOrder
 
         - name: contract_length
-          strategy: label
-
-  # 5. Scaling
+          strategy: ordinal
+          order: ProvideOrder
+        
+        - name: some_cat_column
+          strategy: one_hot
+  
+# 5. Scaling
   - name: scale_features
     type: scaling
     params:
