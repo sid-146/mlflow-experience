@@ -8,6 +8,7 @@
         "mlflow",
         "numpy",
         "pycache",
-        "venv"
+        "venv",
+        "xgboost"
     ]
 }
