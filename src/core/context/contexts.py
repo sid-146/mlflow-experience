@@ -1,11 +1,14 @@
-from typing import Literal
+from typing import Literal, Dict, Union, List
 
 from pydantic import BaseModel, field_validator, errors, model_validator
 
-from core.context.policies import (
-    CategoricalMissingPolicy,
-    NumericMissingPolicy,
+from src.core.context.policies import (
     SourcePolicy,
+    SchemaPolicy,
+    TypeCastPolicy,
+    MissingValuePolicy,
+    FilterPolicy,
+    OutliersPolicy,
 )
 from core.constants.constants import (
     FILE_TYPES,
@@ -45,9 +48,11 @@ class ExperimentContext(BaseModel):
     notes: str
 
 
-class HandleMissingValues(BaseModel):
-    numeric: NumericMissingPolicy
-    categorical: CategoricalMissingPolicy
+class CleaningContext(BaseModel):
+    trim_string: bool
+    lowercase: bool
+    categorical: Dict[str, Dict[str, str]]
+    numeric: Dict[str, Dict[Union[str, int, float], Union[str, int, float]]]
 
 
 class PreprocessingContext(BaseModel):

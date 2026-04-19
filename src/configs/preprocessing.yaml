@@ -84,6 +84,7 @@ preprocessing:
   # 5. Outlier handling & filtering
   filters:
     tenure:
+      type: int
       operator: ">"
       value: 0
 
