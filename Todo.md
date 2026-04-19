@@ -23,6 +23,8 @@
 - improve: Each object is storing reference of Context (RunContext)
 
 ## Implement Proper error handling
+
 - Define any error classes if needed.
 - Handling of errors in preprocessing pipeline
--
+- Fix Logging, better logging
+- Add tracker for pipelines
