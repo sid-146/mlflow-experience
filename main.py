@@ -10,9 +10,12 @@ from src.orchestrator import Orchestrator
 def run(*args, **kwargs):
     console.debug("Reading data from config")
     context = RunContext.from_yaml_dict(config)
-    orchestrator = Orchestrator(context)
-    orchestrator.build()
-    orchestrator.train()
+    with Orchestrator(context) as orchestrator:
+        orchestrator: Orchestrator
+        orchestrator.build()
+        orchestrator.train()
+        orchestrator.test()
+        # orchestrator.close()
     return
 
 
