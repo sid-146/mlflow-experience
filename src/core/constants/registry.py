@@ -1,7 +1,11 @@
 from enum import Enum
 from typing import Callable, Dict
 
-from src.core.models.linear import build_model as build_linear_model
+# from src.core.models.linear import build_model as build_linear_model
+
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+
 from src.core.context.policies import (
     RenamePolicy,
     TypeCastPolicy,
@@ -19,10 +23,6 @@ from src.core.pipelines.transformers import (
 )
 
 import pandas as pd
-
-MODEL_REGISTRY: Dict[str, Callable] = {
-    "linear": build_linear_model,
-}
 
 
 DATA_READER_FUNCTIONS: Dict[str, Callable[[str], pd.DataFrame]] = {
@@ -64,5 +64,20 @@ class PreprocessingRegistry(str, Enum):
             PreprocessingRegistry.scaling: ScalingTransformer,
             PreprocessingRegistry.cleaning: CleaningTransformer,
             PreprocessingRegistry.filter: FilterTransformer,
+        }
+        return mapping.get(self)
+
+
+class ModelType(str, Enum):
+    logistic_regression = "logistic_regression"
+    random_forest = "random_forest"
+    xgboost = "xgboost"
+
+    @property
+    def model_class(self):
+        mapping = {
+            ModelType.logistic_regression: LogisticRegression,
+            ModelType.random_forest: None,  # Placeholder for future implementation
+            ModelType.xgboost: XGBClassifier,  # Placeholder for future implementation
         }
         return mapping.get(self)
