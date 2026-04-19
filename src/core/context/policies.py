@@ -58,7 +58,8 @@ class MissingValuePolicy(BaseModel):
 # Encoding Policy
 #####################
 class EncodingConfig(ColumnConfig):
-    strategy: Literal["one_hot", "label", "target"]
+    strategy: Literal["one_hot", "label", "target", "ordinal"]
+    order: Optional[List[str]] = None
 
 
 class EncodingPolicy(BaseModel):

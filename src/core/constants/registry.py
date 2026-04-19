@@ -14,7 +14,8 @@ from src.core.pipelines.transformers import (
     MissingValueTransformer,
     CleaningTransformer,
     FilterTransformer,
-    ColumnTransformerBuilder,
+    EncodingTransformer,
+    ScalingTransformer,
 )
 
 import pandas as pd
@@ -59,8 +60,8 @@ class PreprocessingRegistry(str, Enum):
             PreprocessingRegistry.rename_columns: RenameColumnsTransformer,
             # PreprocessingType.type_cast: None,  # Handled via custom logic or future transformer
             PreprocessingRegistry.missing_values: MissingValueTransformer,
-            PreprocessingRegistry.encoding: ColumnTransformerBuilder,
-            PreprocessingRegistry.scaling: ColumnTransformerBuilder,
+            PreprocessingRegistry.encoding: EncodingTransformer,
+            PreprocessingRegistry.scaling: ScalingTransformer,
             PreprocessingRegistry.cleaning: CleaningTransformer,
             PreprocessingRegistry.filter: FilterTransformer,
         }
