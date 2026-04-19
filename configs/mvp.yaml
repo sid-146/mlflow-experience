@@ -16,7 +16,7 @@ mlflow:
 
   tags:
     project: churn
-    stage: production
+    stAge: production
     owner: data_science_team
 
 
@@ -42,19 +42,95 @@ dataset:
 
 
 preprocessing:
-  # This are applied over all columns
-  # Todo: Add column level processing in future
-  missing_values: mean
-  categorical_encoding: one_hot
+  # 1. Rename (Schema normalization)
+  - name: rename_columns
+    type: rename
+    params:
+      mapping:
+        CustomerID : customer_id
+        Usage Frequency: usage_frequency
+        Support Calls: support_calls
+        Payment Delay: payment_delay
+        Subscription Type: subscription_type
+        Contract Length: contract_length
+        Total Spend: total_spend
+        Last Interaction: last_interaction
 
-features:
-  scaling: standard
+
+
+  # 2. Type casting
+  - name: cast_types
+    type: type_cast
+    params:
+      columns:
+        - name: Age
+          dtype: int
+
+        - name: Gender
+          dtype: str
+
+        - name: Tenure
+          dtype: int
+
+    # Not adding all columns for now as pandas can infer them correctly.
+
+
+  # 3. Missing values (column-wise strategies)
+  - name: handle_missing
+    type: missing
+    params:
+      columns:
+        - name: Age
+          strategy: mean
+
+        # - name: income
+        #   strategy: median
+
+        - name: Gender
+          strategy: mode
+
+        # - name: country
+        #   strategy: constant
+        #   fill_value: "Unknown"
+
+  # 4. Encoding
+  - name: encode_features
+    type: encoding
+    params:
+      columns:
+        # Todo: Need to add transformer for ordinal
+        - name: Gender
+          strategy: ordinal
+          order: ['Male','Female']
+
+        - name: contract_length
+          strategy: ordinal
+          order: ['Monthly', 'Quarterly', 'Annual']
+        
+        - name: subscription_type
+          strategy: one_hot
+  
+# 5. Scaling
+  - name: scale_features
+    type: scaling
+    params:
+      columns:
+        - name: Age
+          strategy: standard
+
+        - name: total_spend
+          strategy: minmax
+
+# features:
+#   scaling: standard
 
 model:
   type: logistic_regression
+  task: 'binary:classification'
   hyperparameters:
     C: 1.0
-    max_iter: 100
+    max_iter: 250
+    solver: saga
 
 
 training:

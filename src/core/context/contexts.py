@@ -1,19 +1,16 @@
 from enum import Enum
 from typing import List, Dict, Optional, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 
+from src.core.constants.registry import PreprocessingRegistry, ModelType
 from src.core.context.policies import DatasetPolicy
 
 
 # ==============================
 # ENUMS (Optional but recommended)
+# Todo: Move to registry
 # ==============================
-
-
-class ModelType(str, Enum):
-    logistic_regression = "logistic_regression"
-    random_forest = "random_forest"
 
 
 class MissingValueStrategy(str, Enum):
@@ -35,8 +32,6 @@ class ScalingStrategy(str, Enum):
 # ==============================
 # PROJECT
 # ==============================
-
-
 class ProjectContext(BaseModel):
     name: str
     owner: str
@@ -47,8 +42,6 @@ class ProjectContext(BaseModel):
 # ==============================
 # MLFLOW
 # ==============================
-
-
 class MlFlowContext(BaseModel):
     experiment_name: str
     experiment_id: Optional[str] = None
@@ -62,10 +55,8 @@ class MlFlowContext(BaseModel):
 
 
 # ==============================
-# DATA
+# Dataset Context
 # ==============================
-
-
 class DataContext(BaseModel):
     dataset_name: str
     random_state: int = Field(..., ge=0)
@@ -78,37 +69,46 @@ class DataContext(BaseModel):
 # ==============================
 # PREPROCESSING
 # ==============================
-
-
 class PreprocessingContext(BaseModel):
-    missing_values: Optional[MissingValueStrategy] = None
-    categorical_encoding: Optional[EncodingStrategy] = None
+    name: str
+    # todo: i think following step is overly complex
+    type: PreprocessingRegistry
+    params: Any = Field(default_factory=dict)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def cast_params(self):
+        """
+        Convert raw params into typed models based on preprocessing type
+        """
+        policy_class = self.type.policy_class
+        if policy_class is None:
+            raise ValueError(f"Unsupported preprocessing type: {self.type}")
+
+        self.params = policy_class(**self.params)
+        return self
 
 
 # ==============================
 # FEATURES
 # ==============================
-
-
 class FeatureContext(BaseModel):
-    scaling: Optional[ScalingStrategy] = None
+    scaling: Optional[str] = None
 
 
 # ==============================
 # MODEL
 # ==============================
-
-
 class ModelContext(BaseModel):
     type: ModelType
+    task: str
     hyperparameters: Dict[str, Any] = {}
 
 
 # ==============================
 # TRAINING
 # ==============================
-
-
 class TrainingContext(BaseModel):
     objective: str
 
@@ -116,8 +116,6 @@ class TrainingContext(BaseModel):
 # ==============================
 # EVALUATION
 # ==============================
-
-
 class EvaluationContext(BaseModel):
     metrics: List[str]
 
@@ -125,15 +123,13 @@ class EvaluationContext(BaseModel):
 # ==============================
 # ROOT CONTEXT
 # ==============================
-
-
 class RunContext(BaseModel):
     project: ProjectContext
     mlflow: MlFlowContext
     dataset: DataContext
-    preprocessing: PreprocessingContext
-    features: FeatureContext
-    model: ModelContext
+    preprocessing: List[PreprocessingContext]
+    features: Optional[FeatureContext] = None
+    model: ModelContext  # Todo: I guess this should be renamed
     training: TrainingContext
     evaluation: EvaluationContext
 
@@ -143,3 +139,11 @@ class RunContext(BaseModel):
         Entry point for converting YAML → strongly typed config
         """
         return cls.model_validate(config)
+
+    @model_validator(mode="after")
+    def cast_all_preprocessing_params(self):
+        for step in self.preprocessing:
+            step.cast_params()
+        return self
+
+    model_config = ConfigDict(use_enum_values=True)

@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Python Debugger: Python module",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config", "configs/mvp_xgboost.yaml", "--logging-level", "DEBUG"]
+        }
+    ]
+}
