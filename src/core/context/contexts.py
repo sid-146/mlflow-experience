@@ -136,7 +136,7 @@ class RunContext(BaseModel):
     mlflow: MlFlowContext
     dataset: DataContext
     preprocessing: List[PreprocessingContext]
-    features: FeatureContext
+    features: Optional[FeatureContext] = None
     model: ModelContext
     training: TrainingContext
     evaluation: EvaluationContext

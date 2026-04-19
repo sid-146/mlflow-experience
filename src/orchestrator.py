@@ -50,17 +50,12 @@ class Orchestrator:
         )
         console.info("Building preprocessing pipeline...")
         # Todo: Add mlflow tracking in pipeline
-        train_pipeline = pipeline.build()
+        self.pipeline = pipeline.build()
         console.info("Preprocessing pipeline steps added successfully.")
 
         # Todo: Feature Engineering to be added here only then fit_transform can be done.
 
-        X = train_pipeline.fit_transform(
-            self.data_loader.X,
-            self.data_loader.y,
-        )
-        console.info("Preprocessing transformation completed.")
-        print(X)
+        console.info("Preprocessing transformation completed. Ready for training.")
 
         # temp code following
         # self.mlflow_tracker.log_artifact(self.context.dataset.train.path, "train_data.csv")
@@ -73,8 +68,14 @@ class Orchestrator:
         return
 
     # Following are placeholder they can be removed.
-    def train():
-        return
+    def train(self):
+        if not self.pipeline:
+            console.warning("Pipeline  not built yet. Building and training...")
+            self.build()
+        self.pipeline.fit(
+            self.data_loader.X,
+            # self.data_loader.y,
+        )
 
     def predict():
         return
