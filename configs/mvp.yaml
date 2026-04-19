@@ -16,7 +16,7 @@ mlflow:
 
   tags:
     project: churn
-    stage: production
+    stAge: production
     owner: data_science_team
 
 
@@ -33,12 +33,12 @@ dataset:
     target_column: Churn
     positive_class: 1
 
-  # test:
-  #   type: csv
-  #   path: data/raw/churn_test.csv
-  #   id_column: CustomerID
-  #   target_column: Churn
-  #   positive_class: 1
+  test:
+    type: csv
+    path: data/raw/churn_test.csv
+    id_column: CustomerID
+    target_column: Churn
+    positive_class: 1
 
 
 preprocessing:
@@ -101,28 +101,28 @@ preprocessing:
         # Todo: Need to add transformer for ordinal
         - name: Gender
           strategy: ordinal
-          order: ProviderOrder
+          order: ['Male','Female']
 
         - name: contract_length
-          strategy: ordinal
-          order: ProvideOrder
+          strategy: ['Monthly', 'Quarterly', 'Annual'] # Also try with ordinal
+          # order: ProvideOrder
         
-        - name: some_cat_column
-          strategy: one_hot
+        # - name: some_cat_column
+        #   strategy: one_hot
   
 # 5. Scaling
   - name: scale_features
     type: scaling
     params:
       columns:
-        - name: age
+        - name: Age
           strategy: standard
 
-        - name: income
+        - name: total_spend
           strategy: minmax
 
-features:
-  scaling: standard
+# features:
+#   scaling: standard
 
 model:
   type: logistic_regression
