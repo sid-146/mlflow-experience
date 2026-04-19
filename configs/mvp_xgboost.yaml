@@ -16,7 +16,7 @@ mlflow:
 
   tags:
     project: churn
-    stAge: production
+    stage: production
     owner: data_science_team
 
 
@@ -33,12 +33,12 @@ dataset:
     target_column: Churn
     positive_class: 1
 
-  # test:
-  #   type: csv
-  #   path: data/raw/churn_test.csv
-  #   id_column: CustomerID
-  #   target_column: Churn
-  #   positive_class: 1
+  test:
+    type: csv
+    path: data/raw/churn_test.csv
+    id_column: CustomerID
+    target_column: Churn
+    positive_class: 1
 
 
 preprocessing:
@@ -115,8 +115,8 @@ preprocessing:
     type: scaling
     params:
       columns:
-        - name: Age
-          strategy: standard
+        # - name: Age
+        #   strategy: standard
 
         - name: total_spend
           strategy: minmax
@@ -125,16 +125,20 @@ preprocessing:
 #   scaling: standard
 
 model:
-  type: logistic_regression
-  task: 'binary:classification'
+  type: xgboost
+  task: 'xgboost:classification'
   hyperparameters:
-    C: 1.0
-    max_iter: 250
-    solver: saga
+    # General XGBoost Hyperparameters (Tuned Defaults)
+    n_estimators: 1000               # Number of boosting rounds (trees)
+    learning_rate: 0.001            # Controls the step size; crucial for stability
+    max_depth: 10                   # Controls model complexity; limits overfitting
+    # subsample: 0.8                # Fraction of samples used to train each tree
+    # colsample_bytree: 0.8         # Fraction of features used for each tree
+    random_state: 42                # For reproducibility
 
 
 training:
-  objective: binary:logistic
+  objective: xgboost:binary:classification
 
 
 evaluation:
