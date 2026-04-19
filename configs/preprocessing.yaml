@@ -1,0 +1,182 @@
+preprocessing:
+
+  # 1. Schema & structure
+  schema:
+    required_columns:
+      - customer_id
+      - tenure
+      - monthly_charges
+      - total_charges
+      - contract
+      - payment_method
+      - churn
+
+    optional_columns:
+      - gender
+      - senior_citizen
+      - signup_date
+
+    rename:
+      TotalCharges: total_charges
+      MonthlyCharges: monthly_charges
+
+    drop:
+      - email
+      - phone_number
+
+
+  # 2. Type casting & parsing
+  type_casting:
+    tenure:
+      type: int
+
+    monthly_charges:
+      type: float
+
+    total_charges:
+      type: float
+      strip_chars: ["$", ","]
+
+    signup_date:
+      type: datetime
+      format: "%Y-%m-%d"
+
+
+  # 3. Missing value handling
+  missing_values:
+    global:
+      strategy: drop_row
+      threshold: 0.6   # drop rows if >60% missing
+
+    column_strategies:
+      tenure:
+        strategy: median
+
+      monthly_charges:
+        strategy: mean
+
+      total_charges:
+        strategy: constant
+        value: 0.0
+
+      gender:
+        strategy: constant
+        value: "Unknown"
+
+    add_missing_flags: true
+
+
+  # 4. Value cleaning & standardization
+  cleaning:
+    trim_strings: true
+    lowercase: false
+
+    categorical_replacements:
+      contract:
+        "month to month": "Month-to-month"
+        "Monthly": "Month-to-month"
+
+      payment_method:
+        "Electronic check": "Electronic"
+        "E-check": "Electronic"
+
+
+  # 5. Outlier handling & filtering
+  filters:
+    tenure:
+      type: int
+      operator: ">"
+      value: 0
+
+  outliers:
+    monthly_charges:
+      method: clip
+      lower_percentile: 1
+      upper_percentile: 99
+
+    total_charges:
+      method: zscore
+      threshold: 4.0
+
+
+  # 6. Categorical governance
+  categorical:
+    contract:
+      allowed_values:
+        - Month-to-month
+        - One year
+        - Two year
+      unknown_value: "__OTHER__"
+
+    payment_method:
+      min_frequency: 0.01
+      rare_value: "__RARE__"
+
+
+  # 7. Feature engineering
+  feature_engineering:
+    tenure_bucket:
+      source: tenure
+      type: binning
+      bins: [0, 6, 12, 24, 48]
+      labels:
+        - "0-6"
+        - "6-12"
+        - "12-24"
+        - "24-48"
+        - "48+"
+
+    high_value_customer:
+      source: monthly_charges
+      type: threshold
+      operator: ">"
+      value: 80
+
+
+  # 8. Encoding & transformations
+  encoding:
+    contract:
+      type: one_hot
+
+    payment_method:
+      type: ordinal
+      order:
+        - Electronic
+        - Bank Transfer
+        - Credit Card
+        - Mailed Check
+
+  transformations:
+    total_charges:
+      type: log
+
+    monthly_charges:
+      type: standard_scaler
+
+
+  # 9. Feature selection rules
+  feature_selection:
+    drop_if_missing_above: 0.4
+    drop_if_variance_below: 0.01
+
+    keep:
+      - tenure
+      - monthly_charges
+      - total_charges
+      - contract
+      - payment_method
+      - tenure_bucket
+      - high_value_customer
+
+
+  # 10. Preprocessing metadata & monitoring
+  monitoring:
+    log_stats:
+      - mean
+      - std
+      - missing_rate
+      - unique_count
+
+    drift:
+      method: psi
+      threshold: 0.2

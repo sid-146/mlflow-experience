@@ -1,0 +1,143 @@
+project:
+  name: customer_churn_prediction
+  owner: data_science_team
+  environment: production
+  description: Predict customer churn for telecom users
+
+mlflow:
+  experiment_name: customer_churn_experiments
+  experiment_id: NA
+  track_params: true
+  track_metrics: true
+  track_artifacts:
+    - feature_config
+    - preprocessing_objects
+    - model
+
+  tags:
+    project: churn
+    stAge: production
+    owner: data_science_team
+
+
+dataset:
+  dataset_name: telecom_churn_v1
+  random_state: 52
+  # test_size: .3
+  
+  # todo: Add train test split ratio in future if test dataset is not provided.
+  train:
+    type: csv
+    path: data/raw/churn_train.csv
+    id_column: CustomerID
+    target_column: Churn
+    positive_class: 1
+
+  # test:
+  #   type: csv
+  #   path: data/raw/churn_test.csv
+  #   id_column: CustomerID
+  #   target_column: Churn
+  #   positive_class: 1
+
+
+preprocessing:
+  # 1. Rename (Schema normalization)
+  - name: rename_columns
+    type: rename
+    params:
+      mapping:
+        CustomerID : customer_id
+        Usage Frequency: usage_frequency
+        Support Calls: support_calls
+        Payment Delay: payment_delay
+        Subscription Type: subscription_type
+        Contract Length: contract_length
+        Total Spend: total_spend
+        Last Interaction: last_interaction
+
+
+
+  # 2. Type casting
+  - name: cast_types
+    type: type_cast
+    params:
+      columns:
+        - name: Age
+          dtype: int
+
+        - name: Gender
+          dtype: str
+
+        - name: Tenure
+          dtype: int
+
+    # Not adding all columns for now as pandas can infer them correctly.
+
+
+  # 3. Missing values (column-wise strategies)
+  - name: handle_missing
+    type: missing
+    params:
+      columns:
+        - name: Age
+          strategy: mean
+
+        # - name: income
+        #   strategy: median
+
+        - name: Gender
+          strategy: mode
+
+        # - name: country
+        #   strategy: constant
+        #   fill_value: "Unknown"
+
+  # 4. Encoding
+  - name: encode_features
+    type: encoding
+    params:
+      columns:
+        # Todo: Need to add transformer for ordinal
+        - name: Gender
+          strategy: ordinal
+          order: ['Male','Female']
+
+        - name: contract_length
+          strategy: ordinal
+          order: ['Monthly', 'Quarterly', 'Annual']
+        
+        - name: subscription_type
+          strategy: one_hot
+  
+# 5. Scaling
+  - name: scale_features
+    type: scaling
+    params:
+      columns:
+        - name: Age
+          strategy: standard
+
+        - name: total_spend
+          strategy: minmax
+
+# features:
+#   scaling: standard
+
+model:
+  type: logistic_regression
+  task: 'binary:classification'
+  hyperparameters:
+    C: 1.0
+    max_iter: 250
+    solver: saga
+
+
+training:
+  objective: binary:logistic
+
+
+evaluation:
+  metrics:
+    - accuracy
+    - f1

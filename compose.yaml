@@ -8,14 +8,14 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ./volumes/pg_data
+      device: F:\docker-images\volumes\pg_data
 
   minio_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ./volumes/minio_data
+      device: F:\docker-images\volumes\minio_data
 
 services:
   postgres:
@@ -78,7 +78,8 @@ services:
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     container_name: mlflow
-    restart: unless-stopped
+    restart: no
+    
     depends_on:
       postgres:
         condition: service_healthy

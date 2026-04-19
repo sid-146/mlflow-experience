@@ -1,94 +1,149 @@
-from typing import Literal, Dict, Union, List
+from enum import Enum
+from typing import List, Dict, Optional, Any
 
-from pydantic import BaseModel, field_validator, errors, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 
-from src.core.context.policies import (
-    SourcePolicy,
-    SchemaPolicy,
-    TypeCastPolicy,
-    MissingValuePolicy,
-    FilterPolicy,
-    OutliersPolicy,
-)
-from core.constants.constants import (
-    FILE_TYPES,
-    CATEGORICAL_MISSING_STRATEGY,
-    NUMERIC_MISSING_STRATEGY,
-)
+from src.core.constants.registry import PreprocessingRegistry, ModelType
+from src.core.context.policies import DatasetPolicy
 
 
+# ==============================
+# ENUMS (Optional but recommended)
+# Todo: Move to registry
+# ==============================
+
+
+class MissingValueStrategy(str, Enum):
+    mean = "mean"
+    median = "median"
+    most_frequent = "most_frequent"
+
+
+class EncodingStrategy(str, Enum):
+    one_hot = "one_hot"
+    label = "label"
+
+
+class ScalingStrategy(str, Enum):
+    standard = "standard"
+    minmax = "minmax"
+
+
+# ==============================
+# PROJECT
+# ==============================
 class ProjectContext(BaseModel):
     name: str
     owner: str
-    env: Literal["prod", "dev", "test"]
-
-    @field_validator("env", mode="before")
-    def check_env(value: str) -> str:
-        if "prod" in value.lower():
-            return "prod"
-        elif "dev" in value.lower():
-            return "dev"
-        elif "test" in value.lower():
-            return "test"
-        else:
-            raise errors.PydanticUserError(
-                "Invalid value passed. It should 'prod', 'dev' or 'test'."
-            )
+    environment: str
+    description: Optional[str] = None
 
 
-class DataContext(BaseModel):
-    name: str
-    source: SourcePolicy
-
-
-class ExperimentContext(BaseModel):
-    objective: str
-    # baseline_run_id:str
-    # promoted_from_experiment: bool
-    notes: str
-
-
-class CleaningContext(BaseModel):
-    trim_string: bool
-    lowercase: bool
-    categorical: Dict[str, Dict[str, str]]
-    numeric: Dict[str, Dict[Union[str, int, float], Union[str, int, float]]]
-
-
-class PreprocessingContext(BaseModel):
-    missing_values: HandleMissingValues
-
-
+# ==============================
+# MLFLOW
+# ==============================
 class MlFlowContext(BaseModel):
     experiment_name: str
-    experiment_id: str
+    experiment_id: Optional[str] = None
+    # Todo: This is needed as not able to set backend uri in mlflow server command in compose.yaml
+    # need to find solution
+    tracking_uri: Optional[str] = None
+    track_params: bool = True
+    track_metrics: bool = True
+    track_artifacts: List[str] = []
+    tags: Dict[str, str] = {}
 
 
+# ==============================
+# Dataset Context
+# ==============================
+class DataContext(BaseModel):
+    dataset_name: str
+    random_state: int = Field(..., ge=0)
+    train_test_split: Optional[float] = None
+
+    train: DatasetPolicy
+    test: Optional[DatasetPolicy] = None
+
+
+# ==============================
+# PREPROCESSING
+# ==============================
+class PreprocessingContext(BaseModel):
+    name: str
+    # todo: i think following step is overly complex
+    type: PreprocessingRegistry
+    params: Any = Field(default_factory=dict)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def cast_params(self):
+        """
+        Convert raw params into typed models based on preprocessing type
+        """
+        policy_class = self.type.policy_class
+        if policy_class is None:
+            raise ValueError(f"Unsupported preprocessing type: {self.type}")
+
+        self.params = policy_class(**self.params)
+        return self
+
+
+# ==============================
+# FEATURES
+# ==============================
+class FeatureContext(BaseModel):
+    scaling: Optional[str] = None
+
+
+# ==============================
+# MODEL
+# ==============================
+class ModelContext(BaseModel):
+    type: ModelType
+    task: str
+    hyperparameters: Dict[str, Any] = {}
+
+
+# ==============================
+# TRAINING
+# ==============================
+class TrainingContext(BaseModel):
+    objective: str
+
+
+# ==============================
+# EVALUATION
+# ==============================
+class EvaluationContext(BaseModel):
+    metrics: List[str]
+
+
+# ==============================
+# ROOT CONTEXT
+# ==============================
 class RunContext(BaseModel):
     project: ProjectContext
-    data: DataContext
-    experiment: ExperimentContext
     mlflow: MlFlowContext
-    # preprocessing: PreprocessingContext
+    dataset: DataContext
+    preprocessing: List[PreprocessingContext]
+    features: Optional[FeatureContext] = None
+    model: ModelContext  # Todo: I guess this should be renamed
+    training: TrainingContext
+    evaluation: EvaluationContext
 
     @classmethod
-    def populate(cls, config):
-        obj = cls(
-            project=ProjectContext(
-                name=config["project"]["name"],
-                owner=config["project"]["owner"],
-                env=config["project"]["environment"],
-            ),
-            data=DataContext(
-                name=config["data"]["dataset_name"],
-                source=SourcePolicy(
-                    type=config["data"]["source"]["type"],
-                    path=config["data"]["source"]["path"],
-                ),
-            ),
-            experiment=ExperimentContext(
-                objective=config["experiment"]["objective"],
-                notes=config["experiment"]["notes"],
-            ),
-        )
-        return obj
+    def from_yaml_dict(cls, config: dict) -> "RunContext":
+        """
+        Entry point for converting YAML → strongly typed config
+        """
+        return cls.model_validate(config)
+
+    @model_validator(mode="after")
+    def cast_all_preprocessing_params(self):
+        for step in self.preprocessing:
+            step.cast_params()
+        return self
+
+    model_config = ConfigDict(use_enum_values=True)
