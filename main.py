@@ -12,6 +12,7 @@ def run(*args, **kwargs):
     context = RunContext.from_yaml_dict(config)
     orchestrator = Orchestrator(context)
     orchestrator.build()
+    orchestrator.train()
     return
 
 
