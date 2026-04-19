@@ -176,7 +176,6 @@ class ScalingTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         self.ct = self.build()
         if self.ct != "passthrough":
-            print(X.columns)
             self.ct.fit(X, y)
         return self
 

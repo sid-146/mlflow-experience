@@ -3,24 +3,14 @@ from typing import List, Dict, Optional, Any
 
 from pydantic import BaseModel, Field, model_validator, ConfigDict
 
-from src.core.constants.registry import PreprocessingRegistry
-from src.core.context.policies import (
-    DatasetPolicy,
-    ScalingPolicy,
-    EncodingPolicy,
-    MissingValuePolicy,
-    TypeCastPolicy,
-    RenamePolicy,
-)
+from src.core.constants.registry import PreprocessingRegistry, ModelType
+from src.core.context.policies import DatasetPolicy
 
 
 # ==============================
 # ENUMS (Optional but recommended)
 # Todo: Move to registry
 # ==============================
-class ModelType(str, Enum):
-    logistic_regression = "logistic_regression"
-    random_forest = "random_forest"
 
 
 class MissingValueStrategy(str, Enum):
@@ -81,6 +71,7 @@ class DataContext(BaseModel):
 # ==============================
 class PreprocessingContext(BaseModel):
     name: str
+    # todo: i think following step is overly complex
     type: PreprocessingRegistry
     params: Any = Field(default_factory=dict)
 
@@ -111,6 +102,7 @@ class FeatureContext(BaseModel):
 # ==============================
 class ModelContext(BaseModel):
     type: ModelType
+    task: str
     hyperparameters: Dict[str, Any] = {}
 
 
@@ -137,7 +129,7 @@ class RunContext(BaseModel):
     dataset: DataContext
     preprocessing: List[PreprocessingContext]
     features: Optional[FeatureContext] = None
-    model: ModelContext
+    model: ModelContext  # Todo: I guess this should be renamed
     training: TrainingContext
     evaluation: EvaluationContext
 

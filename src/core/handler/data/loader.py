@@ -16,7 +16,7 @@ class DataLoader:
         self.X = None
         self.y = None
         self.X_test = None
-        self.y_Test = None
+        self.y_test = None
 
         self.DATA_READER_FUNCTIONS: Dict[str, Callable[[str], pd.DataFrame]] = {
             "csv": pd.read_csv,

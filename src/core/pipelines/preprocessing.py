@@ -12,6 +12,7 @@ class PreprocessingPipeline:
     def _make_data_for_pipeline(self):
         return
 
+    # Todo: Revisit This function.
     def _instantiate_transformer(self, transformer_class, params):
         """
         Instantiate a transformer with the appropriate parameters based on its type.
@@ -52,4 +53,4 @@ class PreprocessingPipeline:
                         transformer_instance,
                     )
                 )
-        return Pipeline(self.steps)
+        return self.steps
