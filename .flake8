@@ -13,6 +13,7 @@ ignore =
     D100, D101, D102, D103, D104, D105, D106, D107,
     D401
     F403, F401
+    C901
 
 # Enable specific flake8 plugins if used
 # (Uncomment plugins you want to use, see notes below)

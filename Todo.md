@@ -10,7 +10,7 @@
 - Validate steps mentioned in the config can be processed or not.
 - Build Pipeline
 - Execute Pipeline
-- Store information in mlflow artifects
+- Store information in mlflow artifacts
 
 ## After MVP tasks
 
@@ -28,3 +28,9 @@
 - Handling of errors in preprocessing pipeline
 - Fix Logging, better logging
 - Add tracker for pipelines
+
+- p0
+
+## Future Enhancements
+
+- Build for multiple models eg -> text input -> tf-idf -> classification

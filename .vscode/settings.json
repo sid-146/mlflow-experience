@@ -1,6 +1,13 @@
 {
     "cSpell.words": [
+        "docstrings",
+        "dtype",
         "extn",
-        "minmax"
+        "hyperparameters",
+        "minmax",
+        "mlflow",
+        "numpy",
+        "pycache",
+        "venv"
     ]
 }
