@@ -16,7 +16,7 @@ mlflow:
 
   tags:
     project: churn
-    stAge: production
+    stage: production
     owner: data_science_team
 
 

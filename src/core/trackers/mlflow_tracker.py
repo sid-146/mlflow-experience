@@ -1,3 +1,5 @@
+from typing import Optional 
+
 import mlflow
 
 from src.core.context.contexts import RunContext
@@ -15,6 +17,7 @@ class MLflowTracker:
         self.tracking_uri = context.mlflow.tracking_uri or "http://localhost:5000"
         mlflow.set_tracking_uri(self.tracking_uri)
 
+        self.run_id: Optional[str] = None
         console.debug("MLFlow tracker initialized for experiment...")
 
     def start_run(self):
@@ -29,6 +32,7 @@ class MLflowTracker:
             console.debug("Found existing experiment.")
         mlflow.set_experiment(self.experiment_name)
         self.run = mlflow.start_run()
+        self.run_id = self.run.info.run_id 
 
     def log_params(self, params: dict):
         mlflow.log_params(params)
@@ -45,6 +49,12 @@ class MLflowTracker:
     def log_artifact(self, artifact_path: str, artifact_name: str = None):
         mlflow.log_artifact(artifact_path, artifact_name)
 
+
+    # ################# Utilities ######################
+    def _ensure_active_run(self):
+        if self.run_id is None:
+            raise RuntimeError("No active run, call start_run() function to create a new run.")
+        return True
 
 # import mlflow
 # from mlflow.tracking import MlflowClient
