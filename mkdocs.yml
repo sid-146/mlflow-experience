@@ -1,7 +1,10 @@
 site_name: mlflow-experience
 site_description: A declarative, configuration-driven MLOps pipeline platform using Scikit-Learn, Pydantic, and MLflow.
 site_author: Data Science & MLOps Team
-repo_name: mlflow-experience
+site_url: https://sid-146.github.io/mlflow-experience/
+repo_name: sid-146/mlflow-experience
+repo_url: https://github.com/sid-146/mlflow-experience
+edit_uri: edit/main/docs/
 
 theme:
   name: material
@@ -85,3 +88,4 @@ nav:
       - Adding Transformers: developer-guide/extending-transformers.md
       - Adding Models: developer-guide/extending-models.md
       - Architectural Roadmap: developer-guide/roadmap.md
+      - Contributing Guidelines: developer-guide/contributing.md
