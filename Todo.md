@@ -34,3 +34,4 @@
 ## Future Enhancements
 
 - Build for multiple models eg -> text input -> tf-idf -> classification
+- define agents which will write the configuration files for the task. You tell them your task and goal they will run experiments and user can access them on mlflow.
