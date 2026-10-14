@@ -21,4 +21,7 @@ CATEGORICAL_MISSING_STRATEGY = Literal[
     "drop",
 ]
 
-NUMERIC_OPERATORS: Literal[">", ">=", "<", "<=", "=="]
+NUMERIC_OPERATORS = Literal[">", ">=", "<", "<=", "=="]
+
+
+CLEANING_OPTIONS = Literal["zscore", "clip"]
