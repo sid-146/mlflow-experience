@@ -1,0 +1,3496 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A declarative, configuration-driven MLOps pipeline platform using Scikit-Learn, Pydantic, and MLflow.">
+      
+      
+        <meta name="author" content="Data Science & MLOps Team">
+      
+      
+        <link rel="canonical" href="https://sid-146.github.io/mlflow-experience/CODEBASE_AUDIT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Codebase Audit: Complexity, Code Smells & Maintainability - mlflow-experience</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#codebase-audit-complexity-code-smells-maintainability" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mlflow-experience" class="md-header__button md-logo" aria-label="mlflow-experience" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mlflow-experience
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Codebase Audit: Complexity, Code Smells &amp; Maintainability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sid-146/mlflow-experience" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sid-146/mlflow-experience
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../how-to/" class="md-tabs__link">
+          
+  
+  
+  How-To Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../configuration/yaml-schema/" class="md-tabs__link">
+          
+  
+  
+  Configuration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pipelines/data-ingestion/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../observability/mlflow/" class="md-tabs__link">
+          
+  
+  
+  Observability
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../infrastructure/docker-compose/" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../developer-guide/extending-transformers/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mlflow-experience" class="md-nav__button md-logo" aria-label="mlflow-experience" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mlflow-experience
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sid-146/mlflow-experience" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sid-146/mlflow-experience
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/project-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-To Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/custom-dataset/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Train on Custom Dataset
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/handle-missing-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Missing Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/categorical-encoding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Categorical Encoding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/scaling-strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling Strategies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/clean-and-filter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean & Filter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/switch-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Switch Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to/offline-mlflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run MLflow Without Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5-Layer Blueprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/orchestrator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/execution-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    End-to-End Execution Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/yaml-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YAML Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydantic Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/data-ingestion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Ingestion & Splitting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/transformers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Transformers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Building
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Observability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/mlflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MLflow Tracking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dual Logging Subsystem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../infrastructure/docker-compose/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Compose Stack
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/extending-transformers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding Transformers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/extending-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/extending-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding Data Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing Guidelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/coding-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coding Agent Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/future-enhancements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Future Enhancements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Executive Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Executive Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Takeaways
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#findings-by-severity-category" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Findings by Severity &amp; Category
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-repository-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Repository Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Repository Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#technology-stack-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology Stack &amp; Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-execution-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Execution Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-architecture-and-dependency-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Architecture and Dependency Map
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Architecture and Dependency Map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#module-boundary-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Boundary Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-complexity-hotspots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Complexity Hotspots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Complexity Hotspots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-preprocessingpipeline_instantiate_transformer-srccorepipelinespreprocessingpy16-37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. PreprocessingPipeline._instantiate_transformer() (src/core/pipelines/preprocessing.py:16-37)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-missingvaluetransformerfit-srccorepipelinestransformerspy54-84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. MissingValueTransformer.fit() (src/core/pipelines/transformers.py:54-84)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-encodingtransformerbuild-srccorepipelinestransformerspy210-241" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. EncodingTransformer.build() (src/core/pipelines/transformers.py:210-241)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-code-smells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Code Smells
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Code Smells">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-reliance-on-global-variable-scope-mainpy10-12-35-37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Reliance on Global Variable Scope (main.py:10-12, 35-37)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-fragile-logger-handler-indexing-srcorchestratorpy169" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Fragile Logger Handler Indexing (src/orchestrator.py:169)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-side-effects-on-module-import-srccoreloggingloggerpy40-54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Side Effects on Module Import (src/core/logging/logger.py:40-54)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-broken-class-definition-srccoreerrorshandler_errorspy1-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Broken Class Definition (src/core/errors/handler_errors.py:1-2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-abandoned-dead-code-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Abandoned &amp; Dead Code Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-architectural-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Architectural Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Architectural Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-broken-preprocessing-validation-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Broken Preprocessing Validation Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-disconnected-model-task-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Disconnected Model &amp; Task Mappings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-divergent-file-type-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Divergent File Type Contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-testing-and-reliability-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Testing and Reliability Gaps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Testing and Reliability Gaps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-total-absence-of-automated-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Total Absence of Automated Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-silent-error-masking-in-context-managers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Silent Error Masking in Context Managers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-performance-and-resource-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Performance and Resource Risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Performance and Resource Risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-redundant-in-memory-data-duplication-srccorehandlerdataloaderpy71-76" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Redundant In-Memory Data Duplication (src/core/handler/data/loader.py:71-76)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-state-sharing-in-pre-instantiated-transformers-srccorepipelinestransformerspy139-143-203-208" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. State-Sharing in Pre-Instantiated Transformers (src/core/pipelines/transformers.py:139-143, 203-208)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-security-and-configuration-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Security and Configuration Risks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Security and Configuration Risks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-insecure-docker-compose-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Insecure Docker Compose Defaults
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-missing-file-encoding-in-configuration-loader-srccorehandlerconfigloaderpy5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Missing File Encoding in Configuration Loader (src/core/handler/config/loader.py:5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-detailed-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Detailed Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Detailed Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#corr-001-critical-evaluation-defect-holdout-test-set-overwritten-with-training-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CORR-001: Critical Evaluation Defect - Holdout Test Set Overwritten with Training Set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corr-002-user-configured-random_state-completely-ignored" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CORR-002: User-Configured random_state Completely Ignored
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arch-001-preprocessing-policies-crash-on-cleaning-and-filter-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ARCH-001: Preprocessing Policies Crash on cleaning and filter Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arch-002-missing-mlflow-observability-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ARCH-002: Missing MLflow Observability Instrumentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arch-003-contradictory-file-format-contracts-across-system-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ARCH-003: Contradictory File Format Contracts Across System Layers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-001-category-order-ignored-in-encodingtransformer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-001: Category Order Ignored in EncodingTransformer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-002-filtertransformer-violates-scikit-learn-pipeline-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-002: FilterTransformer Violates Scikit-Learn Pipeline Invariants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-003-mainrun-bypasses-arguments-and-accesses-global-variable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-003: main.run() Bypasses Arguments and Accesses Global Variable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-004-fragile-logging-handler-index-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-004: Fragile Logging Handler Index Dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-005-syntaxruntime-failure-in-handler_errorspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-005: Syntax/Runtime Failure in handler_errors.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smell-006-uncontrolled-file-creation-on-module-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMELL-006: Uncontrolled File Creation on Module Import
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dead-001-orphaned-prototype-files-and-commented-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEAD-001: Orphaned Prototype Files and Commented Blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-001-complete-absence-of-automated-test-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TEST-001: Complete Absence of Automated Test Suite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#perf-001-memory-amplification-via-redundant-full-dataframe-copies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PERF-001: Memory Amplification via Redundant Full DataFrame Copies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sec-001-hardcoded-credentials-and-external-network-assumptions-in-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SEC-001: Hardcoded Credentials and External Network Assumptions in Docker Compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-prioritized-top-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Prioritized Top 10
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-remediation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Remediation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Remediation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-wins-vs-broader-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Wins vs. Broader Refactoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#areas-that-should-not-be-refactored-prematurely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Areas That Should NOT Be Refactored Prematurely
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-positive-design-decisions-and-existing-strengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Positive Design Decisions and Existing Strengths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-audit-limitations-and-unverified-hypotheses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Audit Limitations and Unverified Hypotheses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-appendix-files-and-areas-inspected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Appendix: Files and Areas Inspected
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Appendix: Files and Areas Inspected">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-code-files-audited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Code Files Audited
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-infrastructure-files-audited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration &amp; Infrastructure Files Audited
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="codebase-audit-complexity-code-smells-maintainability">Codebase Audit: Complexity, Code Smells &amp; Maintainability<a class="headerlink" href="#codebase-audit-complexity-code-smells-maintainability" title="Permanent link">&para;</a></h1>
+<p><strong>Audit Date:</strong> October 2026<br />
+<strong>Auditor:</strong> Staff+ Software Engineer<br />
+<strong>Repository:</strong> <code>sid-146/mlflow-experience</code><br />
+<strong>Target:</strong> Full Repository Architecture, Code Quality, Observability &amp; Reliability<br />
+<strong>Artifact Path:</strong> <code>docs/CODEBASE_AUDIT.md</code></p>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary<a class="headerlink" href="#1-executive-summary" title="Permanent link">&para;</a></h2>
+<p>This codebase audit presents a comprehensive, evidence-based evaluation of <strong><code>mlflow-experience</code></strong>, a declarative, configuration-driven MLOps pipeline designed to orchestrate tabular data preprocessing, model fitting, and MLflow tracking via YAML specifications.</p>
+<h3 id="key-takeaways">Key Takeaways<a class="headerlink" href="#key-takeaways" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Compelling Conceptual Foundation with Execution Flaws:</strong>
+   The project exhibits a solid architectural philosophy—decoupling pipeline orchestration into 5 logical layers and enforcing schema validation via Pydantic. However, the runtime implementation contains critical correctness bugs, severed contracts between validation and execution, and unfinished prototypes that undermine its declarative promises.</p>
+</li>
+<li>
+<p><strong>Critical Evaluation Defect (<code>CORR-001</code>):</strong>
+   In <code>src/orchestrator.py:78</code>, the holdout test data references are overwritten with the training set (<code>self.data_loader.X_test, self.data_loader.y_test = x_train, y_train</code>). Consequently, all test evaluations are computed on the training set, concealing overfitting and producing invalid validation metrics.</p>
+</li>
+<li>
+<p><strong>Incomplete MLflow Observability (<code>ARCH-002</code>):</strong>
+   While marketed as an automated MLflow tracking framework, <code>Orchestrator</code> never invokes <code>mlflow_tracker.log_metrics()</code>, <code>mlflow_tracker.log_params()</code>, <code>mlflow_tracker.log_model()</code>, or <code>mlflow_tracker.end_run()</code>. It only uploads the plaintext runtime log file upon exit.</p>
+</li>
+<li>
+<p><strong>Zero Test Coverage (<code>TEST-001</code>):</strong>
+   The repository contains <strong>no unit, integration, or regression tests</strong>. Neither <code>pytest</code> nor any test runner is declared in <code>requirements.txt</code> or <code>pyproject.toml</code>.</p>
+</li>
+<li>
+<p><strong>Contract Drift &amp; Dead Features:</strong>
+   Pydantic policies accept types (<code>parquet</code>, <code>xlsx</code>) that crash at runtime in <code>DataLoader</code>, while runtime code supports formats (<code>json</code>) that Pydantic rejects. Preprocessing steps such as <code>cleaning</code> and <code>filter</code> crash at initialization because their policy mapping is <code>None</code>.</p>
+</li>
+</ol>
+<h3 id="findings-by-severity-category">Findings by Severity &amp; Category<a class="headerlink" href="#findings-by-severity-category" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Category</th>
+<th style="text-align: center;">Critical</th>
+<th style="text-align: center;">High</th>
+<th style="text-align: center;">Medium</th>
+<th style="text-align: center;">Low</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Correctness &amp; Logic</strong></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Architecture &amp; Contracts</strong></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;"><strong>4</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Code Smells &amp; Debt</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><strong>6</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Testing &amp; Verification</strong></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Performance &amp; Resource</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Security &amp; Config</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Total</strong></td>
+<td style="text-align: center;"><strong>3</strong></td>
+<td style="text-align: center;"><strong>5</strong></td>
+<td style="text-align: center;"><strong>4</strong></td>
+<td style="text-align: center;"><strong>3</strong></td>
+<td style="text-align: center;"><strong>15</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-repository-overview">2. Repository Overview<a class="headerlink" href="#2-repository-overview" title="Permanent link">&para;</a></h2>
+<h3 id="technology-stack-environment">Technology Stack &amp; Environment<a class="headerlink" href="#technology-stack-environment" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Runtime:</strong> Python <code>3.12+</code></li>
+<li><strong>Package Manager:</strong> <code>uv</code> (<code>pyproject.toml</code>, <code>uv.lock</code>)</li>
+<li><strong>Core Libraries:</strong> <code>scikit-learn&gt;=1.8.0</code>, <code>xgboost&gt;=3.4.1</code>, <code>pandas&gt;=2.3.3</code>, <code>pydantic&gt;=2.12.5</code>, <code>mlflow&gt;=3.9.0</code>, <code>PyYAML&gt;=6.0.3</code></li>
+<li><strong>Documentation:</strong> MkDocs with Material theme (<code>mkdocs-material&gt;=9.7.7</code>)</li>
+<li><strong>Infrastructure:</strong> Docker Compose stack with PostgreSQL, MinIO, and MLflow Server</li>
+</ul>
+<h3 id="core-execution-flow">Core Execution Flow<a class="headerlink" href="#core-execution-flow" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    CLI["main.py (CLI entrypoint)"] --&gt; ConfigLoader["config_loader (YAML)"]
+    ConfigLoader --&gt; Pydantic["RunContext.from_yaml_dict()"]
+    Pydantic --&gt; OrchInit["Orchestrator.__init__()"]
+    OrchInit --&gt; ContextMgr["Context Manager (__enter__)"]
+
+    subgraph Execution["orchestrator.build() -&gt; train() -&gt; test()"]
+        DataLoader["DataLoader.load_data()"]
+        DataSplitter["DataSplitter.split()"]
+        PreprocPipe["PreprocessingPipeline.build()"]
+        ModelBuilder["ModelBuilder.build()"]
+        SklearnPipe["Pipeline([transformers..., estimator])"]
+
+        DataLoader --&gt; DataSplitter
+        DataSplitter --&gt; PreprocPipe
+        PreprocPipe --&gt; ModelBuilder
+        ModelBuilder --&gt; SklearnPipe
+        SklearnPipe --&gt; Fit["pipeline.fit(X_train, y_train)"]
+        Fit --&gt; EvalTrain["orchestrator.evaluate(y_train, y_pred_train)"]
+        EvalTrain --&gt; EvalTest["orchestrator.evaluate(y_test, y_pred_test)"]
+    end
+
+    ContextMgr --&gt; Execution
+    Execution --&gt; Exit["Orchestrator.__exit__()"]
+    Exit --&gt; Artifact["Upload logs/*.log to MLflow"]</code></pre>
+<hr />
+<h2 id="3-architecture-and-dependency-map">3. Architecture and Dependency Map<a class="headerlink" href="#3-architecture-and-dependency-map" title="Permanent link">&para;</a></h2>
+<p>The system is organized into 5 conceptual layers. The table below traces dependencies and boundaries:</p>
+<pre class="mermaid"><code>graph TD
+    subgraph L5["Layer 5: Orchestration"]
+        Main["main.py"]
+        Orch["src/orchestrator.py"]
+    end
+
+    subgraph L2["Layer 2: Config &amp; Validation"]
+        Loader["src/core/handler/config/loader.py"]
+        Contexts["src/core/context/contexts.py"]
+        Policies["src/core/context/policies.py"]
+    end
+
+    subgraph L3["Layer 3: Ingestion"]
+        DataLoader["src/core/handler/data/loader.py"]
+        DataSplitter["src/core/handler/data/splitter.py"]
+    end
+
+    subgraph L4["Layer 4: Pipelines &amp; Models"]
+        Preproc["src/core/pipelines/preprocessing.py"]
+        Transformers["src/core/pipelines/transformers.py"]
+        ModelBuilder["src/core/pipelines/model_builder.py"]
+    end
+
+    subgraph L1["Layer 1: Observability"]
+        Tracker["src/core/trackers/mlflow_tracker.py"]
+        Logger["src/core/logging/logger.py"]
+    end
+
+    Main --&gt; Loader
+    Main --&gt; Contexts
+    Main --&gt; Orch
+    Orch --&gt; DataLoader
+    Orch --&gt; DataSplitter
+    Orch --&gt; Preproc
+    Orch --&gt; ModelBuilder
+    Orch --&gt; Tracker
+    Preproc --&gt; Transformers</code></pre>
+<h3 id="module-boundary-analysis">Module Boundary Analysis<a class="headerlink" href="#module-boundary-analysis" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Tight Coupling to <code>RunContext</code>:</strong> Almost every class (<code>DataLoader</code>, <code>DataSplitter</code>, <code>PreprocessingPipeline</code>, <code>MLflowTracker</code>, <code>Orchestrator</code>) takes the monolithic <code>RunContext</code> God Object. Internal components reach deep into nested sub-contexts, violating encapsulation.</li>
+<li><strong>Missing Boundaries:</strong> <code>src/core/models/linear.py</code> contains an abandoned <code>build_model()</code> function, while the actual model builder resides in <code>src/core/pipelines/model_builder.py</code>.</li>
+</ul>
+<hr />
+<h2 id="4-complexity-hotspots">4. Complexity Hotspots<a class="headerlink" href="#4-complexity-hotspots" title="Permanent link">&para;</a></h2>
+<h3 id="1-preprocessingpipeline_instantiate_transformer-srccorepipelinespreprocessingpy16-37">1. <code>PreprocessingPipeline._instantiate_transformer()</code> (<code>src/core/pipelines/preprocessing.py:16-37</code>)<a class="headerlink" href="#1-preprocessingpipeline_instantiate_transformer-srccorepipelinespreprocessingpy16-37" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Nature of Complexity:</strong> Ad-hoc introspection and branching based on attribute presence (<code>hasattr(params, "mapping")</code>, <code>hasattr(params, "columns")</code>, <code>hasattr(params, "dict")</code>).</li>
+<li><strong>Consequence:</strong> Fragile instantiation logic that fails silently or falls back to empty constructors when new policies do not match hardcoded attribute checks.</li>
+</ul>
+<h3 id="2-missingvaluetransformerfit-srccorepipelinestransformerspy54-84">2. <code>MissingValueTransformer.fit()</code> (<code>src/core/pipelines/transformers.py:54-84</code>)<a class="headerlink" href="#2-missingvaluetransformerfit-srccorepipelinestransformerspy54-84" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Nature of Complexity:</strong> Flagged by the author with <code># Todo: Improve this function. Too complex</code>. Nested conditionals handle both policy objects and legacy dictionary structures, applying column-specific aggregations across heterogenous strategies (<code>mean</code>, <code>median</code>, <code>mode</code>, <code>constant</code>).</li>
+<li><strong>Consequence:</strong> High cyclomatic complexity; mixing numeric and categorical data paths without column type guards causes runtime exceptions when <code>mean</code> is mistakenly applied to strings.</li>
+</ul>
+<h3 id="3-encodingtransformerbuild-srccorepipelinestransformerspy210-241">3. <code>EncodingTransformer.build()</code> (<code>src/core/pipelines/transformers.py:210-241</code>)<a class="headerlink" href="#3-encodingtransformerbuild-srccorepipelinestransformerspy210-241" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Nature of Complexity:</strong> Manually collects and groups columns by strategy into dictionaries, attempts to track category ordering in a detached list, and instantiates nested Scikit-Learn <code>ColumnTransformer</code> instances.</li>
+<li><strong>Consequence:</strong> Column order configuration is lost, while unmapped strategies produce warnings but proceed to build partial pipelines.</li>
+</ul>
+<hr />
+<h2 id="5-code-smells">5. Code Smells<a class="headerlink" href="#5-code-smells" title="Permanent link">&para;</a></h2>
+<h3 id="1-reliance-on-global-variable-scope-mainpy10-12-35-37">1. Reliance on Global Variable Scope (<code>main.py:10-12, 35-37</code>)<a class="headerlink" href="#1-reliance-on-global-variable-scope-mainpy10-12-35-37" title="Permanent link">&para;</a></h3>
+<p><code>main.py</code> defines <code>run(*args, **kwargs)</code> but accesses the global variable <code>config</code> assigned in the <code>__main__</code> block:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">context</span> <span class="o">=</span> <span class="n">RunContext</span><span class="o">.</span><span class="n">from_yaml_dict</span><span class="p">(</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="n">config</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">)</span>  <span class="c1"># 'config' is unresolved in function scope!</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="o">...</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">config_loader</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+</span></code></pre></div>
+<strong>Problem:</strong> <code>run()</code> unpacks <code>**config</code> into <code>kwargs</code>, but completely ignores <code>kwargs</code> and accesses <code>config</code> from the module global scope. Any programmatic invocation of <code>run()</code> from a script or test suite crashes with <code>NameError: name 'config' is not defined</code>.</p>
+<h3 id="2-fragile-logger-handler-indexing-srcorchestratorpy169">2. Fragile Logger Handler Indexing (<code>src/orchestrator.py:169</code>)<a class="headerlink" href="#2-fragile-logger-handler-indexing-srcorchestratorpy169" title="Permanent link">&para;</a></h3>
+<p>In <code>Orchestrator.__exit__</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">mlflow_tracker</span><span class="o">.</span><span class="n">log_artifact</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">console</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="sa">f</span><span class="s2">"logs/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mlflow_tracker</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">run_name</span><span class="si">}</span><span class="s2">.log"</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<strong>Problem:</strong> Direct index access (<code>handlers[1]</code>) violates the Law of Demeter. It presumes that <code>console.handlers</code> will always have at least two handlers and that index <code>1</code> is unconditionally a <code>FileHandler</code>. If log configuration changes or a handler is removed, this raises <code>IndexError</code> or <code>AttributeError</code>.</p>
+<h3 id="3-side-effects-on-module-import-srccoreloggingloggerpy40-54">3. Side Effects on Module Import (<code>src/core/logging/logger.py:40-54</code>)<a class="headerlink" href="#3-side-effects-on-module-import-srccoreloggingloggerpy40-54" title="Permanent link">&para;</a></h3>
+<p>Importing <code>logger.py</code> executes:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">LOG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">"logs"</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">LOG_DIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"logs_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">'%Y_%m_</span><span class="si">%d</span><span class="s1">_%H_%M'</span><span class="p">)</span><span class="si">}</span><span class="s2">.log"</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LOG_DIR</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">f_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"a"</span><span class="p">)</span>
+</span></code></pre></div>
+<strong>Problem:</strong> Merely importing the module creates a new physical file on disk inside <code>src/core/logs/</code>. This has polluted the source repository with over 50 timestamped <code>.log</code> files.</p>
+<h3 id="4-broken-class-definition-srccoreerrorshandler_errorspy1-2">4. Broken Class Definition (<code>src/core/errors/handler_errors.py:1-2</code>)<a class="headerlink" href="#4-broken-class-definition-srccoreerrorshandler_errorspy1-2" title="Permanent link">&para;</a></h3>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LoaderError</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">raise</span>
+</span></code></pre></div>
+<strong>Problem:</strong> A bare <code>raise</code> statement is positioned inside the class body. Importing this file raises an immediate <code>RuntimeError: No active exception to reraise</code>. Furthermore, inheriting from <code>BaseException</code> bypasses standard <code>Exception</code> catching.</p>
+<h3 id="5-abandoned-dead-code-files">5. Abandoned &amp; Dead Code Files<a class="headerlink" href="#5-abandoned-dead-code-files" title="Permanent link">&para;</a></h3>
+<p>The repository contains numerous orphaned, unused, or duplicate files:
+- <code>src/core/pipelines/temp_column_transformer.py</code>: Redundant implementation of column transformations using bare <code>print()</code> statements.
+- <code>src/core/pipelines/temp_feature_engineering.md</code>: An 8.3 KB design draft committed directly inside the Python source package.
+- <code>src/core/pipelines/pipeline.py</code>: Unused <code>BasePipeline</code> abstract class.
+- <code>src/core/pipelines/features.py</code>: Empty 2-line placeholder.
+- <code>src/core/models/linear.py</code>: Unused prototype returning <code>LinearRegression</code>.
+- <code>src/utils/data_loader.py</code>: Empty 0-byte file.
+- <code>src/core/trackers/mlflow_tracker.py:63-160</code>: Nearly 100 lines of commented-out code.</p>
+<hr />
+<h2 id="6-architectural-issues">6. Architectural Issues<a class="headerlink" href="#6-architectural-issues" title="Permanent link">&para;</a></h2>
+<h3 id="1-broken-preprocessing-validation-contract">1. Broken Preprocessing Validation Contract<a class="headerlink" href="#1-broken-preprocessing-validation-contract" title="Permanent link">&para;</a></h3>
+<p><code>src/core/context/contexts.py:85-87</code> strictly requires every preprocessing step to map to a valid <code>policy_class</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">cast_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">policy_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">policy_class</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">if</span> <span class="n">policy_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported preprocessing type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">policy_class</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+</span></code></pre></div>
+However, in <code>src/core/constants/registry.py:52-53</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">PreprocessingRegistry</span><span class="o">.</span><span class="n">cleaning</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">PreprocessingRegistry</span><span class="o">.</span><span class="n">filter</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+</span></code></pre></div>
+<strong>Impact:</strong> Any configuration containing <code>cleaning</code> or <code>filter</code> steps fails Pydantic schema validation at startup, rendering these implemented transformers unusable.</p>
+<h3 id="2-disconnected-model-task-mappings">2. Disconnected Model &amp; Task Mappings<a class="headerlink" href="#2-disconnected-model-task-mappings" title="Permanent link">&para;</a></h3>
+<p>In <code>src/core/constants/registry.py:77-83</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModelType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">logistic_regression</span> <span class="o">=</span> <span class="s2">"logistic_regression"</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">random_forest</span> <span class="o">=</span> <span class="s2">"random_forest"</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">xgboost</span> <span class="o">=</span> <span class="s2">"xgboost"</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="nd">@property</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">model_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>            <span class="n">ModelType</span><span class="o">.</span><span class="n">logistic_regression</span><span class="p">:</span> <span class="n">LogisticRegression</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="n">ModelType</span><span class="o">.</span><span class="n">random_forest</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="n">ModelType</span><span class="o">.</span><span class="n">xgboost</span><span class="p">:</span> <span class="n">XGBClassifier</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="p">}</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="k">return</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</span></code></pre></div>
+- Specifying <code>random_forest</code> in YAML passes validation but raises <code>ValueError: Given mode : random_forest is not configured yet</code> at runtime.
+- The pipeline hardcodes Scikit-Learn classifiers and metric evaluations, yet <code>ModelContext</code> contains arbitrary string fields (<code>task: "binary:classification"</code>) and <code>TrainingContext</code> contains <code>objective: "binary:logistic"</code> that are completely ignored by <code>ModelBuilder</code>.</p>
+<h3 id="3-divergent-file-type-contracts">3. Divergent File Type Contracts<a class="headerlink" href="#3-divergent-file-type-contracts" title="Permanent link">&para;</a></h3>
+<p>There is an unresolved contradiction across three files regarding supported dataset formats:
+- <code>src/core/constants/constants.py:3-8</code>: <code>FILE_TYPES = Literal["csv", "parquet", "excel", "xlsx"]</code>
+- <code>src/core/constants/registry.py:28-32</code>: <code>{"csv": pd.read_csv, "excel": pd.read_excel, "json": pd.read_json}</code>
+- <code>src/core/handler/data/loader.py:21-26</code>: <code>{"csv": pd.read_csv, "excel": pd.read_excel, "json": pd.read_json, "classmethod": self.method}</code></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Format</th>
+<th style="text-align: center;">Pydantic Validates?</th>
+<th style="text-align: center;"><code>registry.py</code> Handles?</th>
+<th style="text-align: center;"><code>DataLoader</code> Reads?</th>
+<th style="text-align: left;">Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>csv</code></strong></td>
+<td style="text-align: center;">✅ Yes</td>
+<td style="text-align: center;">✅ Yes</td>
+<td style="text-align: center;">✅ Yes</td>
+<td style="text-align: left;">Works</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>json</code></strong></td>
+<td style="text-align: center;">❌ <strong>Rejected</strong></td>
+<td style="text-align: center;">✅ Yes</td>
+<td style="text-align: center;">✅ Yes</td>
+<td style="text-align: left;">Schema validation blocks valid reader</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>parquet</code></strong></td>
+<td style="text-align: center;">✅ <strong>Accepted</strong></td>
+<td style="text-align: center;">❌ No</td>
+<td style="text-align: center;">❌ No</td>
+<td style="text-align: left;">Passes validation, crashes at runtime</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>xlsx</code></strong></td>
+<td style="text-align: center;">✅ <strong>Accepted</strong></td>
+<td style="text-align: center;">❌ No</td>
+<td style="text-align: center;">❌ No</td>
+<td style="text-align: left;">Passes validation, crashes at runtime</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-testing-and-reliability-gaps">7. Testing and Reliability Gaps<a class="headerlink" href="#7-testing-and-reliability-gaps" title="Permanent link">&para;</a></h2>
+<h3 id="1-total-absence-of-automated-tests">1. Total Absence of Automated Tests<a class="headerlink" href="#1-total-absence-of-automated-tests" title="Permanent link">&para;</a></h3>
+<p>There is no <code>tests/</code> directory anywhere in the project. The codebase has <strong>0% automated test coverage</strong>.
+- No unit tests for transformers (<code>MissingValueTransformer</code>, <code>ScalingTransformer</code>, <code>EncodingTransformer</code>).
+- No tests for YAML schema validation, failure modes, or bad configurations.
+- No integration tests for <code>Orchestrator</code> execution.
+- Neither <code>pytest</code> nor any test runner is specified in dependencies.</p>
+<h3 id="2-silent-error-masking-in-context-managers">2. Silent Error Masking in Context Managers<a class="headerlink" href="#2-silent-error-masking-in-context-managers" title="Permanent link">&para;</a></h3>
+<p>In <code>src/orchestrator.py:162-171</code>:
+When an exception occurs during <code>build()</code> (such as a database connection failure), <code>self.mlflow_tracker.run</code> was previously uninitialized, causing <code>AttributeError</code> inside <code>__exit__</code> and masking the true root cause with a secondary teardown exception.</p>
+<hr />
+<h2 id="8-performance-and-resource-risks">8. Performance and Resource Risks<a class="headerlink" href="#8-performance-and-resource-risks" title="Permanent link">&para;</a></h2>
+<h3 id="1-redundant-in-memory-data-duplication-srccorehandlerdataloaderpy71-76">1. Redundant In-Memory Data Duplication (<code>src/core/handler/data/loader.py:71-76</code>)<a class="headerlink" href="#1-redundant-in-memory-data-duplication-srccorehandlerdataloaderpy71-76" title="Permanent link">&para;</a></h3>
+<p><code>DataLoader</code> loads raw tabular data into <code>self.data</code>, and immediately produces feature matrix <code>self.X</code> by dropping the target column:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">target_column</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">target_column</span><span class="p">]</span>
+</span></code></pre></div>
+<code>DataFrame.drop(axis=1)</code> creates a full copy of the feature matrix in memory. When <code>self.data_splitter.split()</code> executes, four additional DataFrames (<code>x_train</code>, <code>x_test</code>, <code>y_train</code>, <code>y_test</code>) are created. For large tabular datasets (e.g., millions of rows), this causes a 3x to 5x memory amplification, triggering Out-Of-Memory (OOM) faults.</p>
+<h3 id="2-state-sharing-in-pre-instantiated-transformers-srccorepipelinestransformerspy139-143-203-208">2. State-Sharing in Pre-Instantiated Transformers (<code>src/core/pipelines/transformers.py:139-143, 203-208</code>)<a class="headerlink" href="#2-state-sharing-in-pre-instantiated-transformers-srccorepipelinestransformerspy139-143-203-208" title="Permanent link">&para;</a></h3>
+<p><code>ScalingTransformer</code> and <code>EncodingTransformer</code> instantiate Scikit-Learn transformers inside <code>__init__</code> in dictionaries:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">_strategy_map</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="s2">"standard"</span><span class="p">:</span> <span class="n">StandardScaler</span><span class="p">(),</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="s2">"minmax"</span><span class="p">:</span> <span class="n">MinMaxScaler</span><span class="p">(),</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="s2">"robust"</span><span class="p">:</span> <span class="n">RobustScaler</span><span class="p">(),</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+</span></code></pre></div>
+If <code>fit()</code> is called repeatedly on different splits or pipelines, fitted state (e.g., <code>mean_</code>, <code>scale_</code>) lingers across invocations, introducing subtle state pollution risks.</p>
+<hr />
+<h2 id="9-security-and-configuration-risks">9. Security and Configuration Risks<a class="headerlink" href="#9-security-and-configuration-risks" title="Permanent link">&para;</a></h2>
+<h3 id="1-insecure-docker-compose-defaults">1. Insecure Docker Compose Defaults<a class="headerlink" href="#1-insecure-docker-compose-defaults" title="Permanent link">&para;</a></h3>
+<p>In <code>compose.yaml:93-98</code> and <code>.env</code>:
+- Default credentials are hardcoded in <code>.env</code> (<code>POSTGRES_PASSWORD=mlflowpass</code>, <code>MINIO_ROOT_PASSWORD=minioadminpass</code>).
+- <code>mlflow</code> service runs as root inside the container.
+- Network configuration references an external unauthenticated network <code>shared-infra-net: external: true</code>.</p>
+<h3 id="2-missing-file-encoding-in-configuration-loader-srccorehandlerconfigloaderpy5">2. Missing File Encoding in Configuration Loader (<code>src/core/handler/config/loader.py:5</code>)<a class="headerlink" href="#2-missing-file-encoding-in-configuration-loader-srccorehandlerconfigloaderpy5" title="Permanent link">&para;</a></h3>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span></code></pre></div>
+On Windows platforms, <code>open()</code> without an explicit <code>encoding="utf-8"</code> relies on the system default ANSI code page (e.g., <code>cp1252</code>), leading to <code>UnicodeDecodeError</code> when configuration files contain UTF-8 characters (accents, symbols, non-ASCII descriptions).</p>
+<hr />
+<h2 id="10-detailed-findings">10. Detailed Findings<a class="headerlink" href="#10-detailed-findings" title="Permanent link">&para;</a></h2>
+<h3 id="corr-001-critical-evaluation-defect-holdout-test-set-overwritten-with-training-set"><code>CORR-001</code>: Critical Evaluation Defect - Holdout Test Set Overwritten with Training Set<a class="headerlink" href="#corr-001-critical-evaluation-defect-holdout-test-set-overwritten-with-training-set" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Correctness</li>
+<li><strong>Severity:</strong> Critical</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/orchestrator.py:73-78</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_splitter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">X</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> On line 78, <code>x_train, y_train</code> is assigned to <code>X_test, y_test</code> instead of <code>x_test, y_test</code>.</li>
+<li><strong>Impact:</strong> The pipeline evaluates holdout performance strictly on training data. Model metrics displayed in console logs and stored in artifacts reflect training accuracy, entirely masking overfitting and data leakage.</li>
+<li><strong>Recommended Direction:</strong> Correct line 78 to:
+  <code>self.data_loader.X_test, self.data_loader.y_test = x_test, y_test</code></li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="corr-002-user-configured-random_state-completely-ignored"><code>CORR-002</code>: User-Configured <code>random_state</code> Completely Ignored<a class="headerlink" href="#corr-002-user-configured-random_state-completely-ignored" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Correctness</li>
+<li><strong>Severity:</strong> High</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/handler/data/splitter.py:12</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span> <span class="ow">or</span> <span class="n">context</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">random_state</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> Because <code>42</code> is truthy in Python, <code>42 or &lt;expr&gt;</code> unconditionally evaluates to <code>42</code>.</li>
+<li><strong>Impact:</strong> The user's <code>random_state</code> setting in YAML is dead code; the split is permanently frozen at seed 42 regardless of configuration.</li>
+<li><strong>Recommended Direction:</strong> Reverse the operand order:
+  <code>self.random_state = context.dataset.random_state if context.dataset.random_state is not None else 42</code></li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="arch-001-preprocessing-policies-crash-on-cleaning-and-filter-types"><code>ARCH-001</code>: Preprocessing Policies Crash on <code>cleaning</code> and <code>filter</code> Types<a class="headerlink" href="#arch-001-preprocessing-policies-crash-on-cleaning-and-filter-types" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Architecture</li>
+<li><strong>Severity:</strong> Critical</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/context/contexts.py:85-87</code> &amp; <code>src/core/constants/registry.py:52-53</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># contexts.py</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">policy_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">policy_class</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">if</span> <span class="n">policy_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported preprocessing type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">policy_class</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># registry.py</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">PreprocessingRegistry</span><span class="o">.</span><span class="n">cleaning</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">PreprocessingRegistry</span><span class="o">.</span><span class="n">filter</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> <code>RunContext</code> validates all preprocessing steps during model validation. For <code>cleaning</code> and <code>filter</code>, <code>policy_class</code> returns <code>None</code>, throwing <code>ValueError</code> and preventing any pipeline with these steps from running.</li>
+<li><strong>Impact:</strong> Feature cleaning and row filtering cannot be used despite transformers existing in <code>src/core/pipelines/transformers.py</code>.</li>
+<li><strong>Recommended Direction:</strong> Define dedicated Pydantic policies (<code>CleaningPolicy</code>, <code>FilterPolicy</code>) in <code>policies.py</code> and register them in <code>PreprocessingRegistry.policy_class</code>.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="arch-002-missing-mlflow-observability-instrumentation"><code>ARCH-002</code>: Missing MLflow Observability Instrumentation<a class="headerlink" href="#arch-002-missing-mlflow-observability-instrumentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Architecture</li>
+<li><strong>Severity:</strong> High</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/orchestrator.py:112-160</code></li>
+<li><strong>Evidence:</strong>
+  <code>Orchestrator.train()</code> and <code>Orchestrator.test()</code> call <code>evaluate()</code>, which calculates <code>accuracy_score</code> and <code>f1_score</code> and logs to <code>console.info</code>, but never calls <code>self.mlflow_tracker.log_metrics()</code>. Furthermore, <code>self.mlflow_tracker.log_params()</code>, <code>self.mlflow_tracker.log_model()</code>, and <code>self.mlflow_tracker.end_run()</code> are never invoked anywhere in <code>Orchestrator</code>.</li>
+<li><strong>Problem:</strong> The platform fails to log hyperparameters, metrics, and models to MLflow.</li>
+<li><strong>Impact:</strong> The core value proposition of the repository (automated MLflow tracking) is unrealized; runs cannot be monitored or compared in the MLflow UI.</li>
+<li><strong>Recommended Direction:</strong> Instrument <code>Orchestrator.build()</code> to call <code>log_params(self.context.model.hyperparameters)</code>, <code>evaluate()</code> to call <code>self.mlflow_tracker.log_metrics(metrics)</code>, <code>train()</code> to call <code>self.mlflow_tracker.log_model(self.pipeline)</code>, and <code>__exit__()</code> to call <code>self.mlflow_tracker.end_run()</code>.</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Dependencies:</strong> <code>CORR-001</code></li>
+</ul>
+<hr />
+<h3 id="arch-003-contradictory-file-format-contracts-across-system-layers"><code>ARCH-003</code>: Contradictory File Format Contracts Across System Layers<a class="headerlink" href="#arch-003-contradictory-file-format-contracts-across-system-layers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Architecture</li>
+<li><strong>Severity:</strong> High</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/constants/constants.py:3-8</code>, <code>src/core/constants/registry.py:28-32</code>, <code>src/core/handler/data/loader.py:21-26</code></li>
+<li><strong>Evidence:</strong>
+  <code>FILE_TYPES</code> allows <code>"csv", "parquet", "excel", "xlsx"</code>. <code>registry.py</code> supports <code>"csv", "excel", "json"</code>. <code>loader.py</code> duplicates <code>registry.py</code> and adds <code>"classmethod": self.method</code>.</li>
+<li><strong>Problem:</strong> Type definition drift across validation, registry, and execution layers.</li>
+<li><strong>Impact:</strong> Confusing developer experience; JSON is rejected at validation, while Parquet passes validation and fails at runtime.</li>
+<li><strong>Recommended Direction:</strong> Consolidate <code>FILE_TYPES</code> into a single canonical source of truth in <code>src/core/constants/registry.py</code> and implement proper reader functions or remove unsupported extensions.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-001-category-order-ignored-in-encodingtransformer"><code>SMELL-001</code>: Category Order Ignored in <code>EncodingTransformer</code><a class="headerlink" href="#smell-001-category-order-ignored-in-encodingtransformer" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> High</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/pipelines/transformers.py:215-234</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_detail</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="o">...</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">transformers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">strategy</span><span class="si">}</span><span class="s2">_encoding"</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span>
+</span></code></pre></div>
+  <code>orders</code> is populated in line 220, but <code>obj</code> is taken from <code>self._strategy_map["ordinal"] = OrdinalEncoder()</code>.</li>
+<li><strong>Problem:</strong> <code>col_detail.order</code> is never passed to <code>OrdinalEncoder(categories=...)</code>.</li>
+<li><strong>Impact:</strong> Ordinal hierarchies specified in YAML are silently discarded and sorted alphabetically.</li>
+<li><strong>Recommended Direction:</strong> Construct individual <code>OrdinalEncoder(categories=[col_detail.order])</code> instances per column when <code>order</code> is provided.</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-002-filtertransformer-violates-scikit-learn-pipeline-invariants"><code>SMELL-002</code>: <code>FilterTransformer</code> Violates Scikit-Learn Pipeline Invariants<a class="headerlink" href="#smell-002-filtertransformer-violates-scikit-learn-pipeline-invariants" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> High</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/pipelines/transformers.py:109-124</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FilterTransformer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">condition</span><span class="p">)</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> In Scikit-Learn, standard <code>Pipeline.fit(X, y)</code> transforms <code>X</code> step-by-step while <code>y</code> remains untouched. Dropping rows inside <code>transform(X)</code> desynchronizes the sample count between <code>X</code> and <code>y</code>.</li>
+<li><strong>Impact:</strong> Calling <code>fit(X, y)</code> on a pipeline containing <code>FilterTransformer</code> crashes with <code>ValueError: Found input variables with inconsistent numbers of samples</code>.</li>
+<li><strong>Recommended Direction:</strong> Relocate row filtering outside the Scikit-Learn pipeline directly into <code>DataLoader</code> or <code>DataSplitter</code> before feature/target extraction.</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-003-mainrun-bypasses-arguments-and-accesses-global-variable"><code>SMELL-003</code>: <code>main.run()</code> Bypasses Arguments and Accesses Global Variable<a class="headerlink" href="#smell-003-mainrun-bypasses-arguments-and-accesses-global-variable" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> Medium</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>main.py:10-12, 37</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">context</span> <span class="o">=</span> <span class="n">RunContext</span><span class="o">.</span><span class="n">from_yaml_dict</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="o">...</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> <code>run()</code> accesses the module global <code>config</code> instead of accepting arguments.</li>
+<li><strong>Impact:</strong> Un-testable entry point; breaks Python import conventions.</li>
+<li><strong>Recommended Direction:</strong> Change signature to <code>def run(config: dict): context = RunContext.from_yaml_dict(config)</code>.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-004-fragile-logging-handler-index-dependency"><code>SMELL-004</code>: Fragile Logging Handler Index Dependency<a class="headerlink" href="#smell-004-fragile-logging-handler-index-dependency" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> Medium</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/orchestrator.py:169</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">mlflow_tracker</span><span class="o">.</span><span class="n">log_artifact</span><span class="p">(</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">console</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">,</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="sa">f</span><span class="s2">"logs/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mlflow_tracker</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">run_name</span><span class="si">}</span><span class="s2">.log"</span><span class="p">,</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> Hardcodes assumption that <code>handlers[1]</code> exists and is a <code>FileHandler</code>.</li>
+<li><strong>Impact:</strong> Runtime failure if handlers are reordered or removed.</li>
+<li><strong>Recommended Direction:</strong> Expose an explicit <code>get_log_filepath()</code> helper function from <code>src.core.logging.logger</code>.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-005-syntaxruntime-failure-in-handler_errorspy"><code>SMELL-005</code>: Syntax/Runtime Failure in <code>handler_errors.py</code><a class="headerlink" href="#smell-005-syntaxruntime-failure-in-handler_errorspy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> Medium</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/errors/handler_errors.py:1-2</code></li>
+<li><strong>Evidence:</strong>
+  <div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LoaderError</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="k">raise</span>
+</span></code></pre></div></li>
+<li><strong>Problem:</strong> Contains a bare <code>raise</code> statement at class definition scope.</li>
+<li><strong>Impact:</strong> Crashes with <code>RuntimeError</code> if imported; inherits from <code>BaseException</code>.</li>
+<li><strong>Recommended Direction:</strong> Replace with <code>class LoaderError(Exception): pass</code>.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="smell-006-uncontrolled-file-creation-on-module-import"><code>SMELL-006</code>: Uncontrolled File Creation on Module Import<a class="headerlink" href="#smell-006-uncontrolled-file-creation-on-module-import" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> Low</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/logging/logger.py:40-47</code></li>
+<li><strong>Evidence:</strong> Top-level script execution in <code>logger.py</code> creates <code>src/core/logs/logs_YYYY_MM_DD_HH_MM.log</code> whenever imported.</li>
+<li><strong>Problem:</strong> Creates permanent log artifacts during testing, imports, and tool runs inside the source directory.</li>
+<li><strong>Impact:</strong> 50+ junk log files committed to git.</li>
+<li><strong>Recommended Direction:</strong> Initialize handlers lazily inside an explicit <code>configure_logger()</code> function and output logs to a top-level <code>logs/</code> directory ignored by git.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="dead-001-orphaned-prototype-files-and-commented-blocks"><code>DEAD-001</code>: Orphaned Prototype Files and Commented Blocks<a class="headerlink" href="#dead-001-orphaned-prototype-files-and-commented-blocks" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Code Smell</li>
+<li><strong>Severity:</strong> Low</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> Multiple files (<code>src/core/pipelines/temp_column_transformer.py</code>, <code>temp_feature_engineering.md</code>, <code>pipeline.py</code>, <code>features.py</code>, <code>src/core/models/linear.py</code>, <code>src/utils/data_loader.py</code>, <code>src/core/trackers/mlflow_tracker.py:63-160</code>)</li>
+<li><strong>Evidence:</strong> Multiple empty or duplicate files and ~100 lines of commented code in production modules.</li>
+<li><strong>Problem:</strong> Accumulation of technical debt and uncurated scratch artifacts.</li>
+<li><strong>Impact:</strong> Increases cognitive overhead and confusion for developers and AI agents.</li>
+<li><strong>Recommended Direction:</strong> Delete orphaned files and remove commented-out dead code.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="test-001-complete-absence-of-automated-test-suite"><code>TEST-001</code>: Complete Absence of Automated Test Suite<a class="headerlink" href="#test-001-complete-absence-of-automated-test-suite" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Testing</li>
+<li><strong>Severity:</strong> Critical</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> Entire repository</li>
+<li><strong>Evidence:</strong> No <code>tests/</code> directory exists. No test runner is configured.</li>
+<li><strong>Problem:</strong> Zero regression protection.</li>
+<li><strong>Impact:</strong> Critical defects (<code>CORR-001</code>, <code>CORR-002</code>, <code>ARCH-001</code>) went undetected.</li>
+<li><strong>Recommended Direction:</strong> Set up <code>pytest</code> in <code>pyproject.toml</code>, establish a <code>tests/</code> directory with fixtures for YAML parsing, transformer behavior, and pipeline fitting.</li>
+<li><strong>Effort:</strong> Medium</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="perf-001-memory-amplification-via-redundant-full-dataframe-copies"><code>PERF-001</code>: Memory Amplification via Redundant Full DataFrame Copies<a class="headerlink" href="#perf-001-memory-amplification-via-redundant-full-dataframe-copies" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Performance</li>
+<li><strong>Severity:</strong> Medium</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>src/core/handler/data/loader.py:71-76, 93-98</code></li>
+<li><strong>Evidence:</strong> <code>self.data = func(path)</code>, followed by <code>self.X = self.data.drop(...)</code> and <code>self.y = self.data[...]</code>.</li>
+<li><strong>Problem:</strong> Retains both the full raw DataFrame and the feature/target splits simultaneously in memory.</li>
+<li><strong>Impact:</strong> High memory footprint on large datasets, leading to potential OOM failures.</li>
+<li><strong>Recommended Direction:</strong> Delete or overwrite <code>self.data</code> once <code>X</code> and <code>y</code> are extracted, or avoid duplicating column series.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h3 id="sec-001-hardcoded-credentials-and-external-network-assumptions-in-docker-compose"><code>SEC-001</code>: Hardcoded Credentials and External Network Assumptions in Docker Compose<a class="headerlink" href="#sec-001-hardcoded-credentials-and-external-network-assumptions-in-docker-compose" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Category:</strong> Security</li>
+<li><strong>Severity:</strong> Low</li>
+<li><strong>Confidence:</strong> High</li>
+<li><strong>Location:</strong> <code>compose.yaml:93-98</code> and <code>.env</code></li>
+<li><strong>Evidence:</strong> Static default passwords in <code>.env</code> and external Docker network declarations (<code>shared-infra-net: external: true</code>).</li>
+<li><strong>Problem:</strong> Running <code>docker compose up</code> fails if external network is missing; default passwords pose risk if exposed.</li>
+<li><strong>Impact:</strong> Deployment friction and security risks in shared hosting environments.</li>
+<li><strong>Recommended Direction:</strong> Make <code>shared-infra-net</code> optional or create it in compose, and provide a <code>.env.example</code> template.</li>
+<li><strong>Effort:</strong> Small</li>
+<li><strong>Dependencies:</strong> None</li>
+</ul>
+<hr />
+<h2 id="11-prioritized-top-10">11. Prioritized Top 10<a class="headerlink" href="#11-prioritized-top-10" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Priority</th>
+<th style="text-align: left;">Finding ID</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: center;">Severity</th>
+<th style="text-align: center;">Remediation Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><strong>1</strong></td>
+<td style="text-align: left;"><strong><code>CORR-001</code></strong></td>
+<td style="text-align: left;">Critical Evaluation Defect: Test split overwritten with training split</td>
+<td style="text-align: center;">Critical</td>
+<td style="text-align: center;">Small</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>2</strong></td>
+<td style="text-align: left;"><strong><code>TEST-001</code></strong></td>
+<td style="text-align: left;">Complete absence of automated test suite</td>
+<td style="text-align: center;">Critical</td>
+<td style="text-align: center;">Medium</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>3</strong></td>
+<td style="text-align: left;"><strong><code>ARCH-001</code></strong></td>
+<td style="text-align: left;">Preprocessing policies crash on <code>cleaning</code> and <code>filter</code> steps</td>
+<td style="text-align: center;">Critical</td>
+<td style="text-align: center;">Small</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>4</strong></td>
+<td style="text-align: left;"><strong><code>ARCH-002</code></strong></td>
+<td style="text-align: left;">Missing MLflow observability instrumentation (metrics/params/models)</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">Medium</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>5</strong></td>
+<td style="text-align: left;"><strong><code>CORR-002</code></strong></td>
+<td style="text-align: left;">Short-circuit evaluation order ignores user <code>random_state</code></td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">Small</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>6</strong></td>
+<td style="text-align: left;"><strong><code>SMELL-002</code></strong></td>
+<td style="text-align: left;"><code>FilterTransformer</code> drops rows inside Scikit-Learn pipeline</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">Medium</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>7</strong></td>
+<td style="text-align: left;"><strong><code>SMELL-001</code></strong></td>
+<td style="text-align: left;">Category order ignored in <code>EncodingTransformer</code></td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">Medium</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>8</strong></td>
+<td style="text-align: left;"><strong><code>ARCH-003</code></strong></td>
+<td style="text-align: left;">Inconsistent file format contracts across validation and runtime</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">Small</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>9</strong></td>
+<td style="text-align: left;"><strong><code>SMELL-003</code></strong></td>
+<td style="text-align: left;"><code>main.run()</code> bypasses arguments and accesses global variable</td>
+<td style="text-align: center;">Medium</td>
+<td style="text-align: center;">Small</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>10</strong></td>
+<td style="text-align: left;"><strong><code>SMELL-004</code></strong></td>
+<td style="text-align: left;">Fragile logging handler index dependency (<code>handlers[1]</code>)</td>
+<td style="text-align: center;">Medium</td>
+<td style="text-align: center;">Small</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-remediation-roadmap">12. Remediation Roadmap<a class="headerlink" href="#12-remediation-roadmap" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Phase1["Phase 1: Immediate Correctness (P0)"]
+        direction TB
+        F1["Fix CORR-001: Correct x_test assignment"]
+        F2["Fix CORR-002: Correct random_state evaluation"]
+        F3["Fix ARCH-001: Register CleaningPolicy &amp; FilterPolicy"]
+        F4["Fix SMELL-005: Correct handler_errors.py syntax"]
+    end
+
+    subgraph Phase2["Phase 2: Observability &amp; Testing (P1)"]
+        direction TB
+        F5["Implement TEST-001: Set up pytest &amp; unit test suite"]
+        F6["Fix ARCH-002: Connect Orchestrator to MLflow metrics/model logging"]
+        F7["Fix SMELL-002: Move row filtering upstream of Sklearn pipeline"]
+    end
+
+    subgraph Phase3["Phase 3: Structural Consistency (P2)"]
+        direction TB
+        F8["Fix ARCH-003: Unify FILE_TYPES and data readers"]
+        F9["Fix SMELL-001: Wire category order to OrdinalEncoder"]
+        F10["Fix SMELL-003: Pass config parameter cleanly into main.run()"]
+    end
+
+    subgraph Phase4["Phase 4: Cleanup &amp; Hygiene (P3)"]
+        direction TB
+        F11["Fix SMELL-004 &amp; SMELL-006: Refactor logger initialization"]
+        F12["Fix DEAD-001: Prune dead prototypes and markdown files"]
+        F13["Fix PERF-001: Optimize DataFrame memory lifecycle"]
+    end
+
+    Phase1 --&gt; Phase2 --&gt; Phase3 --&gt; Phase4</code></pre>
+<h3 id="quick-wins-vs-broader-refactoring">Quick Wins vs. Broader Refactoring<a class="headerlink" href="#quick-wins-vs-broader-refactoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Quick Wins (&lt; 1 hour):</strong> <code>CORR-001</code> (1-line fix), <code>CORR-002</code> (1-line fix), <code>ARCH-001</code> (add 2 Pydantic models), <code>SMELL-005</code> (fix class syntax), <code>SMELL-003</code> (add function parameter).</li>
+<li><strong>Broader Refactorings:</strong> <code>TEST-001</code> (building comprehensive test harness), <code>SMELL-002</code> (relocating filtering before pipeline building), <code>ARCH-002</code> (full MLflow lifecycle integration).</li>
+</ul>
+<h3 id="areas-that-should-not-be-refactored-prematurely">Areas That Should NOT Be Refactored Prematurely<a class="headerlink" href="#areas-that-should-not-be-refactored-prematurely" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pydantic Validation Layer:</strong> The Pydantic schema in <code>src/core/context/</code> is well-designed. Do not discard it; simply fix the missing policy classes.</li>
+<li><strong>Scikit-Learn Pandas Integration:</strong> <code>set_config(transform_output="pandas")</code> is a major strength of this project. Do not replace it with custom array wrappers.</li>
+</ul>
+<hr />
+<h2 id="13-positive-design-decisions-and-existing-strengths">13. Positive Design Decisions and Existing Strengths<a class="headerlink" href="#13-positive-design-decisions-and-existing-strengths" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Strict Pandas DataFrame Output:</strong>
+   Enforcing <code>set_config(transform_output="pandas")</code> across all Scikit-Learn transformers ensures feature names and column metadata are preserved throughout the transformation lifecycle.</li>
+<li><strong>Pydantic Configuration Validation:</strong>
+   Validating YAML configuration upfront before executing expensive data operations prevents late-stage pipeline crashes due to typos or invalid parameters.</li>
+<li><strong>Decoupled Architecture:</strong>
+   The separation between Data Loading, Data Splitting, Preprocessing Assembly, Model Building, and Tracking provides a modular foundation that can easily support new algorithms and preprocessing techniques once existing bugs are resolved.</li>
+<li><strong>Modern Packaging with <code>uv</code>:</strong>
+   Adopting <code>uv</code> and <code>uv.lock</code> enables fast, reproducible virtual environment provisioning and deterministic builds.</li>
+<li><strong>Comprehensive Technical Documentation:</strong>
+   The documentation site (built with Material for MkDocs) features thorough guides, architectural blueprints, and how-to recipes.</li>
+</ol>
+<hr />
+<h2 id="14-audit-limitations-and-unverified-hypotheses">14. Audit Limitations and Unverified Hypotheses<a class="headerlink" href="#14-audit-limitations-and-unverified-hypotheses" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Multi-Node &amp; Distributed Execution:</strong> The audit was conducted in a local single-node environment. Performance behavior under distributed workloads (e.g., Dask, Spark) was not evaluated.</li>
+<li><strong>Large Dataset Profiling (<code>PERF-001</code>):</strong> Memory amplification was identified through static code inspection of Pandas transformations; empirical memory profiling with memory-profiler on multi-gigabyte datasets should be conducted to measure exact heap usage.</li>
+<li><strong>External Docker Infrastructure:</strong> The Docker Compose stack relies on an external network (<code>shared-infra-net</code>) that was not running during the audit; live PostgreSQL/MinIO integration could not be verified against the Docker compose definition.</li>
+</ul>
+<hr />
+<h2 id="15-appendix-files-and-areas-inspected">15. Appendix: Files and Areas Inspected<a class="headerlink" href="#15-appendix-files-and-areas-inspected" title="Permanent link">&para;</a></h2>
+<h3 id="source-code-files-audited">Source Code Files Audited<a class="headerlink" href="#source-code-files-audited" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>main.py</code></li>
+<li><code>src/__init__.py</code></li>
+<li><code>src/orchestrator.py</code></li>
+<li><code>src/core/__init__.py</code></li>
+<li><code>src/core/constants/constants.py</code></li>
+<li><code>src/core/constants/registry.py</code></li>
+<li><code>src/core/context/contexts.py</code></li>
+<li><code>src/core/context/policies.py</code></li>
+<li><code>src/core/errors/handler_errors.py</code></li>
+<li><code>src/core/handler/config/loader.py</code></li>
+<li><code>src/core/handler/data/loader.py</code></li>
+<li><code>src/core/handler/data/splitter.py</code></li>
+<li><code>src/core/logging/logger.py</code></li>
+<li><code>src/core/models/linear.py</code></li>
+<li><code>src/core/pipelines/features.py</code></li>
+<li><code>src/core/pipelines/model_builder.py</code></li>
+<li><code>src/core/pipelines/pipeline.py</code></li>
+<li><code>src/core/pipelines/preprocessing.py</code></li>
+<li><code>src/core/pipelines/temp_column_transformer.py</code></li>
+<li><code>src/core/pipelines/temp_feature_engineering.md</code></li>
+<li><code>src/core/pipelines/transformers.py</code></li>
+<li><code>src/core/trackers/mlflow_tracker.py</code></li>
+<li><code>src/utils/data_loader.py</code></li>
+</ul>
+<h3 id="configuration-infrastructure-files-audited">Configuration &amp; Infrastructure Files Audited<a class="headerlink" href="#configuration-infrastructure-files-audited" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>configs/demo.yaml</code></li>
+<li><code>configs/mvp.yaml</code></li>
+<li><code>configs/mvp_xgboost.yaml</code></li>
+<li><code>configs/preprocessing.yaml</code></li>
+<li><code>compose.yaml</code></li>
+<li><code>Dockerfile</code></li>
+<li><code>.env</code></li>
+<li><code>.gitignore</code></li>
+<li><code>pyproject.toml</code></li>
+<li><code>requirements.txt</code></li>
+<li><code>mkdocs.yml</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
