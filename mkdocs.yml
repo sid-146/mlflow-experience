@@ -7,85 +7,100 @@ repo_url: https://github.com/sid-146/mlflow-experience
 edit_uri: edit/main/docs/
 
 theme:
-  name: material
-  language: en
-  palette:
-    # Light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - navigation.tracking
-    - search.suggest
-    - search.highlight
-    - content.code.copy
-    - content.code.annotate
+    name: material
+    language: en
+    palette:
+        # Light mode
+        - media: "(prefers-color-scheme: light)"
+          scheme: default
+          primary: indigo
+          accent: indigo
+          toggle:
+              icon: material/brightness-7
+              name: Switch to dark mode
+        # Dark mode
+        - media: "(prefers-color-scheme: dark)"
+          scheme: slate
+          primary: indigo
+          accent: indigo
+          toggle:
+              icon: material/brightness-4
+              name: Switch to light mode
+    features:
+        - navigation.tabs
+        - navigation.sections
+        - navigation.expand
+        - navigation.top
+        - navigation.tracking
+        - search.suggest
+        - search.highlight
+        - content.code.copy
+        - content.code.annotate
 
 markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - attr_list
-  - md_in_html
-  - tables
-  - toc:
-      permalink: true
+    - admonition
+    - pymdownx.details
+    - pymdownx.superfences:
+          custom_fences:
+              - name: mermaid
+                class: mermaid
+                format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.tabbed:
+          alternate_style: true
+    - pymdownx.tasklist:
+          custom_checkbox: true
+    - attr_list
+    - md_in_html
+    - tables
+    - toc:
+          permalink: true
 
 nav:
-  - Home: index.md
-  - Getting Started:
-      - Installation: getting-started/installation.md
-      - Quickstart Guide: getting-started/quickstart.md
-  - Architecture:
-      - 5-Layer Blueprint: architecture/overview.md
-      - Orchestrator Engine: architecture/orchestrator.md
-      - End-to-End Execution Flow: architecture/execution-flow.md
-  - Configuration:
-      - YAML Schema Specification: configuration/yaml-schema.md
-      - Pydantic Policies: configuration/policies.md
-      - Configuration Examples: configuration/examples.md
-  - Pipelines & Transformations:
-      - Data Ingestion & Splitting: pipelines/data-ingestion.md
-      - Preprocessing Engine: pipelines/preprocessing.md
-      - Custom Transformers: pipelines/transformers.md
-      - Model Building & Estimator Factory: pipelines/models.md
-  - Observability & Tracking:
-      - MLflow Tracking: observability/mlflow.md
-      - Dual Logging Subsystem: observability/logging.md
-  - Infrastructure:
-      - Docker Compose Stack: infrastructure/docker-compose.md
-  - Developer Guide:
-      - Adding Transformers: developer-guide/extending-transformers.md
-      - Adding Models: developer-guide/extending-models.md
-      - Architectural Roadmap: developer-guide/roadmap.md
-      - Contributing Guidelines: developer-guide/contributing.md
+    - Home: index.md
+    - Getting Started:
+          - Installation: getting-started/installation.md
+          - Quickstart Guide: getting-started/quickstart.md
+          - Project Tour: getting-started/project-tour.md
+    - How-To Guides:
+          - Overview: how-to/index.md
+          - Train on Custom Dataset: how-to/custom-dataset.md
+          - Handle Missing Data: how-to/handle-missing-data.md
+          - Categorical Encoding: how-to/categorical-encoding.md
+          - Scaling Strategies: how-to/scaling-strategies.md
+          - Clean & Filter: how-to/clean-and-filter.md
+          - Switch Models: how-to/switch-models.md
+          - Run MLflow Without Docker: how-to/offline-mlflow.md
+    - Architecture:
+          - 5-Layer Blueprint: architecture/overview.md
+          - Orchestrator Engine: architecture/orchestrator.md
+          - End-to-End Execution Flow: architecture/execution-flow.md
+    - Configuration:
+          - YAML Schema: configuration/yaml-schema.md
+          - Pydantic Policies: configuration/policies.md
+          - Configuration Examples: configuration/examples.md
+    - Pipelines:
+          - Data Ingestion & Splitting: pipelines/data-ingestion.md
+          - Preprocessing Engine: pipelines/preprocessing.md
+          - Custom Transformers: pipelines/transformers.md
+          - Model Building: pipelines/models.md
+          - Model Evaluation: pipelines/evaluation.md
+    - Observability:
+          - MLflow Tracking: observability/mlflow.md
+          - Dual Logging Subsystem: observability/logging.md
+    - Infrastructure:
+          - Docker Compose Stack: infrastructure/docker-compose.md
+    - Developer Guide:
+          - Adding Transformers: developer-guide/extending-transformers.md
+          - Adding Models: developer-guide/extending-models.md
+          - Adding Data Formats: developer-guide/extending-data.md
+          - Troubleshooting & FAQ: developer-guide/troubleshooting.md
+          - Contributing Guidelines: developer-guide/contributing.md
+          - Coding Agent Guide: developer-guide/coding-agent.md
+          - Architectural Roadmap: developer-guide/roadmap.md
+          - Future Enhancements: developer-guide/future-enhancements.md
