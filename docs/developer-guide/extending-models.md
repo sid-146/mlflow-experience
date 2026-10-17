@@ -1,65 +1,61 @@
-# Adding a New Model Estimator
+# Adding a New Model
 
-This guide walks you through integrating a new machine learning algorithm into the platform.
+Adding a new machine learning algorithm to `mlflow-experience` takes less than 5 minutes.
 
 ---
 
-## Example: Adding Scikit-Learn `RandomForestClassifier`
+## Example: Adding `RandomForestClassifier`
+
+Suppose you want to support Scikit-Learn's `RandomForestClassifier`.
 
 ### Step 1: Update `ModelType` (`src/core/constants/registry.py`)
 
-Import the algorithm and register it in `ModelType.model_class`:
+1. Import the model class at the top of the file:
+   ```python
+   from sklearn.ensemble import RandomForestClassifier
+   ```
 
-```python
-from sklearn.ensemble import RandomForestClassifier
+2. Add the enum value and map it in `model_class`:
+   ```python
+   class ModelType(str, Enum):
+       logistic_regression = "logistic_regression"
+       xgboost = "xgboost"
+       random_forest = "random_forest"  # <--- Add this
 
-class ModelType(str, Enum):
-    logistic_regression = "logistic_regression"
-    xgboost = "xgboost"
-    random_forest = "random_forest"
-
-    @property
-    def model_class(self):
-        mapping = {
-            ModelType.logistic_regression: LogisticRegression,
-            ModelType.xgboost: XGBClassifier,
-            ModelType.random_forest: RandomForestClassifier,
-        }
-        return mapping.get(self)
-```
+       @property
+       def model_class(self):
+           mapping = {
+               ModelType.logistic_regression: LogisticRegression,
+               ModelType.xgboost: XGBClassifier,
+               ModelType.random_forest: RandomForestClassifier,  # <--- Add this
+           }
+           return mapping.get(self)
+   ```
 
 ---
 
-### Step 2: Use in YAML Configuration
+### Step 2: Use It in Your YAML Configuration
 
-Any valid keyword arguments for the model constructor can be passed under `hyperparameters`:
+You can now use `random_forest` in any configuration file. Any parameters you pass under `hyperparameters` will be forwarded directly to the `RandomForestClassifier` constructor:
 
 ```yaml
 model:
   type: random_forest
   task: 'random_forest:classification'
   hyperparameters:
-    n_estimators: 300
-    max_depth: 15
+    n_estimators: 200
+    max_depth: 10
     min_samples_split: 5
     random_state: 42
     n_jobs: -1
-
-training:
-  objective: binary:classification
-
-evaluation:
-  metrics:
-    - accuracy
-    - f1
 ```
 
 ---
 
-### Step 3: Run the Experiment
-
-Execute `main.py` with your new configuration:
+### Step 3: Run the Pipeline
 
 ```bash
-python -m main --config configs/random_forest.yaml --logging-level INFO
+uv run python -m main --config configs/your_config.yaml
 ```
+
+The `ModelBuilder` will automatically instantiate `RandomForestClassifier` with your hyperparameters and add it as the final step of the pipeline.

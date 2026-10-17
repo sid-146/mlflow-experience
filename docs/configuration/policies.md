@@ -1,97 +1,74 @@
-# Pydantic Validation & Policies
+# Pydantic Policies & Validation
 
-The configuration layer in `mlflow-experience` does not merely pass raw dictionaries to code; it relies on **Pydantic v2** models (`src.core.context.policies` and `src.core.context.contexts`) to guarantee type correctness, check constraints, and cast step parameters.
+To make development reliable and prevent silent runtime crashes, `mlflow-experience` validates all configuration settings using **Pydantic v2** (`src/core/context/contexts.py` and `src/core/context/policies.py`).
 
 ---
 
-## The Dynamic Casting Mechanism
+## Why Use Pydantic?
 
-When the root context is initialized:
+In traditional ML projects with YAML files, a simple typo (such as `strategy: meaan` or omitting a required column) would only fail deep inside Scikit-Learn code after 10 minutes of execution.
+
+With Pydantic:
+- **Instant Failure**: Your configuration is checked before any data is loaded or processed.
+- **Helpful Error Messages**: It tells you the exact line, field name, and expected values if something is wrong.
+- **Automatic Type Conversion**: String numbers are parsed into integers or floats automatically where appropriate.
+
+---
+
+## How It Works
+
+When `main.py` runs, it calls:
 
 ```python
-class PreprocessingContext(BaseModel):
-    name: str
-    type: PreprocessingRegistry
-    params: Any = Field(default_factory=dict)
-
-    def cast_params(self):
-        policy_class = self.type.policy_class
-        if policy_class is not None:
-            self.params = policy_class(**self.params)
-        return self
+context = RunContext.from_yaml_dict(config)
 ```
 
-During validation, the `RunContext` executes `cast_all_preprocessing_params()`, converting raw dictionary trees into strongly-typed policy objects.
+1. Pydantic parses the dictionary against `RunContext`.
+2. A model validator (`cast_all_preprocessing_params`) checks each step in `preprocessing`.
+3. The step's `type` looks up the corresponding policy class from `PreprocessingRegistry.policy_class`.
+4. The dictionary is instantiated into a strongly-typed policy object (e.g. `MissingValuePolicy`, `ScalingPolicy`, `EncodingPolicy`).
 
 ---
 
-## Policy Classes
+## Policy Reference
 
 ### `RenamePolicy`
-Enforces that column mappings are non-empty:
-```python
-class RenamePolicy(BaseModel):
-    mapping: Dict[str, str]
-
-    @field_validator("mapping")
-    def validate_mapping(cls, v):
-        if not v:
-            raise ValueError("Rename mapping cannot be empty")
-        return v
-```
-
----
-
-### `TypeCastPolicy`
-Specifies data types and optional date formats:
-```python
-class TypeCastConfig(BaseModel):
-    name: str
-    dtype: str
-    format: Optional[str] = None
-
-class TypeCastPolicy(BaseModel):
-    columns: List[TypeCastConfig]
-```
-
----
+Validates column rename mappings:
+- `mapping` (*dict[str, str]*): Must not be empty.
 
 ### `MissingValuePolicy`
-Constrains imputation strategies to supported values:
-```python
-class MissingValueConfig(BaseModel):
-    name: str
-    strategy: Literal["mean", "median", "mode", "constant"]
-    fill_value: Optional[Any] = None
-
-class MissingValuePolicy(BaseModel):
-    columns: List[MissingValueConfig]
-```
-
----
+Validates missing value strategies:
+- `strategy`: Must be one of `"mean"`, `"median"`, `"mode"`, or `"constant"`.
+- `fill_value`: Required if `strategy: constant`.
 
 ### `EncodingPolicy`
-Governs categorical transformations and ordinal rank ordering:
-```python
-class EncodingConfig(BaseModel):
-    name: str
-    strategy: Literal["one_hot", "label", "target", "ordinal"]
-    order: Optional[List[str]] = None
+Validates encoding configurations:
+- `strategy`: Must be one of `"one_hot"`, `"ordinal"`, `"label"`, or `"target"`.
+- `order`: A list of strings specifying the exact order for ordinal encoding (e.g. `['Low', 'Medium', 'High']`).
 
-class EncodingPolicy(BaseModel):
-    columns: List[EncodingConfig]
-```
+### `ScalingPolicy`
+Validates scaling strategies:
+- `strategy`: Must be one of `"standard"`, `"minmax"`, or `"robust"`.
 
 ---
 
-### `ScalingPolicy`
-Governs numerical feature transformations:
-```python
-class ScalingConfig(BaseModel):
-    name: str
-    strategy: Literal["standard", "minmax", "robust"]
-    params: Optional[Dict[str, Any]] = None
+## Example Error Output
 
-class ScalingPolicy(BaseModel):
-    columns: List[ScalingConfig]
+If you provide an invalid strategy in your YAML:
+
+```yaml
+- name: bad_step
+  type: missing
+  params:
+    columns:
+      - name: age
+        strategy: invalid_strategy
+```
+
+Pydantic immediately catches it:
+
+```text
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MissingValueConfig
+strategy
+  Input should be 'mean', 'median', 'mode' or 'constant' [type=literal_error, input_value='invalid_strategy', input_type=str]
 ```

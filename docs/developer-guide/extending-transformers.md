@@ -1,20 +1,22 @@
-# Adding a New Preprocessing Transformer
+# Adding a New Transformer
 
-This tutorial guides you through creating and registering a custom transformer in `mlflow-experience`.
+This tutorial shows you how to add a new preprocessing transformer to `mlflow-experience` in 4 simple steps.
 
 ---
 
 ## Example: Building an Outlier Clipping Transformer
 
-Suppose we want a transformer that clips numerical outliers based on quantile thresholds.
+Let's say you want to build an `OutlierTransformer` that clips values above or below specific quantiles.
 
-### Step 1: Define the Policy (`src/core/context/policies.py`)
+### Step 1: Create the Policy (`src/core/context/policies.py`)
 
-Create the Pydantic configuration models:
+Define the Pydantic models to validate the YAML settings:
 
 ```python
+# src/core/context/policies.py
+
 class OutlierConfig(ColumnConfig):
-    method: Literal["clip", "zscore"]
+    method: Literal["clip", "zscore"] = "clip"
     lower_quantile: Optional[float] = 0.01
     upper_quantile: Optional[float] = 0.99
 
@@ -26,9 +28,10 @@ class OutlierPolicy(BaseModel):
 
 ### Step 2: Implement the Transformer (`src/core/pipelines/transformers.py`)
 
-Subclass `BaseEstimator` and `TransformerMixin`:
+Create a class that inherits from `BaseEstimator` and `TransformerMixin`:
 
 ```python
+# src/core/pipelines/transformers.py
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class OutlierTransformer(BaseEstimator, TransformerMixin):
@@ -37,6 +40,7 @@ class OutlierTransformer(BaseEstimator, TransformerMixin):
         self.bounds_ = {}
 
     def fit(self, X, y=None):
+        # Learn upper and lower bounds on training set ONLY
         if hasattr(self.params, "columns"):
             for col in self.params.columns:
                 lower = X[col.name].quantile(col.lower_quantile)
@@ -46,9 +50,9 @@ class OutlierTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         X = X.copy()
-        for col, (lower, upper) in self.bounds_.items():
-            if col in X.columns:
-                X[col] = X[col].clip(lower=lower, upper=upper)
+        for col_name, (lower, upper) in self.bounds_.items():
+            if col_name in X.columns:
+                X[col_name] = X[col_name].clip(lower=lower, upper=upper)
         return X
 ```
 
@@ -56,9 +60,11 @@ class OutlierTransformer(BaseEstimator, TransformerMixin):
 
 ### Step 3: Register in `PreprocessingRegistry` (`src/core/constants/registry.py`)
 
-Add the identifier and associate it with its policy and transformer class:
+Add your new type to `PreprocessingRegistry`:
 
 ```python
+# src/core/constants/registry.py
+
 class PreprocessingRegistry(str, Enum):
     # ... existing entries ...
     outliers = "outliers"
@@ -82,7 +88,9 @@ class PreprocessingRegistry(str, Enum):
 
 ---
 
-### Step 4: Use in YAML Configuration
+### Step 4: Use It in Your YAML File
+
+Add the step to `preprocessing` in your config:
 
 ```yaml
 preprocessing:
@@ -95,3 +103,11 @@ preprocessing:
           lower_quantile: 0.01
           upper_quantile: 0.99
 ```
+
+Run the pipeline:
+
+```bash
+uv run python -m main --config configs/mvp.yaml
+```
+
+Your new transformer will be instantiated, fitted on training data, applied to test data, and included in the pipeline!

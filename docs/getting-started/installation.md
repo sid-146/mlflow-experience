@@ -1,87 +1,120 @@
 # Installation & Setup
 
-This guide walks you through setting up your local environment to run `mlflow-experience`. The project uses **uv** for blazing-fast, deterministic dependency resolution.
+This guide will help you set up your machine to run `mlflow-experience`.
 
 ---
 
-## Prerequisites
+## 1. Prerequisites
 
-Ensure you have the following installed:
-
-- **uv**: High-performance Python package installer and resolver ([Install uv](https://docs.astral.sh/uv/getting-started/installation/)).
-- **Python**: Version `3.12` (managed automatically by uv if needed).
-- **Docker & Docker Compose**: To run the MLflow tracking stack (PostgreSQL, MinIO, and MLflow server).
-- **Git**: To clone the repository and track code revisions.
+- **Python**: Version `3.11` or `3.12` (Python 3.12 recommended).
+- **uv**: We recommend [uv](https://docs.astral.sh/uv/) because it installs dependencies in seconds and manages virtual environments automatically.
+- **Git**: To clone the repository.
+- **Docker** *(Optional)*: Required only if you want to run the self-hosted MLflow + PostgreSQL + MinIO stack. You can also run MLflow locally without Docker!
 
 ---
 
-## 1. Clone the Repository
+## 2. Clone the Repository
+
+Open your terminal and clone the repository:
 
 ```bash
-git clone https://github.com/your-org/mlflow-experience.git
+git clone https://github.com/sid-146/mlflow-experience.git
 cd mlflow-experience
 ```
 
 ---
 
-## 2. Environment Setup with `uv` (Recommended)
+## 3. Install Dependencies
 
-`uv` manages the virtual environment, Python version, and locked dependencies automatically:
+### Option A: Using `uv` (Recommended)
+
+If you have `uv` installed, simply run:
 
 ```bash
-# Synchronize environment with uv.lock (creates .venv and installs all dependencies)
 uv sync
 ```
 
-Alternatively, to manually initialize a virtual environment:
+This single command will:
+1. Create a `.venv` virtual environment if it doesn't already exist.
+2. Install all required packages pinned in `uv.lock`.
 
-=== "Using uv"
-    ```bash
-    uv venv --python 3.12 .venv
-    .\.venv\Scripts\Activate.ps1  # Windows
-    # or
-    source .venv/bin/activate     # Linux/macOS
-    uv sync
+To install `uv` if you don't have it yet:
+```bash
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Option B: Using Standard `pip`
+
+If you prefer using standard Python `venv` and `pip`:
+
+=== "Windows (PowerShell)"
+    ```powershell
+    python -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    pip install -r requirements.txt
     ```
 
-=== "Using Standard pip"
+=== "macOS / Linux"
     ```bash
-    python -m venv .venv
-    .\.venv\Scripts\Activate.ps1  # Windows
+    python3 -m venv .venv
+    source .venv/bin/activate
     pip install -r requirements.txt
     ```
 
 ---
 
-## 3. Running Commands with `uv run`
+## 4. Verify Your Environment
 
-With `uv`, you don't even need to activate the virtual environment manually. Prefix any command with `uv run`:
+Test that the CLI tool runs and displays help:
 
-```bash
-# Run experiment pipeline
-uv run python -m main --config configs/mvp.yaml --logging-level DEBUG
+=== "Using uv"
+    ```bash
+    uv run python -m main --help
+    ```
 
-# Run MkDocs documentation server
-uv run mkdocs serve
+=== "Using standard venv"
+    ```bash
+    python -m main --help
+    ```
+
+You should see:
+```text
+usage: main.py [-h] --config CONFIG [--logging-level LOGGING_LEVEL]
+
+options:
+  -h, --help            show this help message and exit
+  --config CONFIG       Config File Path
+  --logging-level LOGGING_LEVEL
+                        Debug Level
 ```
 
 ---
 
-## 4. Spin up the MLflow Tracking Server
+## 5. Setting up MLflow
 
-The platform includes a containerized MLflow environment running PostgreSQL (backend store) and MinIO (S3-compatible artifact store).
+You have two simple choices for MLflow tracking:
 
-Start the stack with Docker Compose:
+### Choice 1: Run MLflow Locally (Zero Docker Needed)
+
+You can run an MLflow server directly in a separate terminal:
+
+```bash
+uv run mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --port 5000
+```
+
+Open [http://localhost:5000](http://localhost:5000) in your browser. All your experiment runs and metrics will show up here.
+
+### Choice 2: Run via Docker Compose
+
+If you have Docker Desktop installed and want a production-like stack with PostgreSQL and MinIO S3 storage:
 
 ```bash
 docker compose up -d
 ```
 
-Verify the services are healthy:
-
-```bash
-docker compose ps
-```
-
-- **MLflow UI**: Open [http://localhost:5000](http://localhost:5000)
-- **MinIO Console**: Open [http://localhost:9001](http://localhost:9001) (User: `minioadmin`, Password: `minioadminpass`)
+- MLflow UI: [http://localhost:5000](http://localhost:5000)
+- MinIO Storage Console: [http://localhost:9001](http://localhost:9001) (User: `minioadmin`, Pass: `minioadminpass`)

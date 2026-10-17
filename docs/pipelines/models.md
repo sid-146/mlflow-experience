@@ -1,51 +1,68 @@
-# Model Building & Estimator Factory
+# Model Building & Estimators
 
-The `ModelBuilder` (`src.core.pipelines.model_builder`) serves as the factory responsible for instantiating the terminal estimator in the Scikit-Learn pipeline.
+The `ModelBuilder` class (`src/core/pipelines/model_builder.py`) instantiates the machine learning algorithm that forms the final step of the Scikit-Learn pipeline.
 
 ---
 
-## 1. The `ModelType` Registry
+## 1. Supported Model Families
 
-Model families are registered in the `ModelType` enum (`src.core.constants.registry`):
+Models are registered in the `ModelType` enum in `src/core/constants/registry.py`:
 
-```python
-class ModelType(str, Enum):
-    logistic_regression = "logistic_regression"
-    random_forest = "random_forest"
-    xgboost = "xgboost"
+| YAML `type` | Python Class | Underlying Library |
+| :--- | :--- | :--- |
+| `logistic_regression` | `LogisticRegression` | Scikit-Learn |
+| `xgboost` | `XGBClassifier` | XGBoost |
 
-    @property
-    def model_class(self):
-        mapping = {
-            ModelType.logistic_regression: LogisticRegression,
-            ModelType.random_forest: None,  # Placeholder for future implementation
-            ModelType.xgboost: XGBClassifier,
-        }
-        return mapping.get(self)
+---
+
+## 2. Dynamic Hyperparameter Forwarding
+
+You can configure any constructor parameter supported by the model directly in YAML under `hyperparameters`.
+
+### Example A: Logistic Regression
+
+```yaml
+model:
+  type: logistic_regression
+  task: 'binary:classification'
+  hyperparameters:
+    C: 1.0                # Inverse regularization strength
+    max_iter: 250         # Maximum solver iterations
+    solver: saga          # Algorithm to use for optimization problem
+    random_state: 42
+```
+
+### Example B: XGBoost Classifier
+
+```yaml
+model:
+  type: xgboost
+  task: 'xgboost:classification'
+  hyperparameters:
+    n_estimators: 500     # Number of boosted trees
+    learning_rate: 0.01   # Step size shrinkage
+    max_depth: 6          # Maximum tree depth
+    subsample: 0.8        # Subsample ratio of training instances
+    random_state: 42
 ```
 
 ---
 
-## 2. Dynamic Instantiation
+## 3. How It Is Added to the Pipeline
 
-The `ModelBuilder.build()` method looks up the class corresponding to `context.type`:
+Inside `orchestrator.py`:
 
 ```python
-class ModelBuilder:
-    def __init__(self, context: ModelContext):
-        self.context = context
+# 1. Build model step
+model_step = self.model_builder.build()  # Returns [('binary:classification', model_instance)]
 
-    def build(self):
-        model_class = self.context.type.model_class
-        if model_class is None:
-            raise ValueError(f"Given model: {self.context.type} is not configured yet.")
+# 2. Append to pipeline steps
+self.pipeline_steps.extend(model_step)
 
-        if self.context.hyperparameters:
-            model_instance = model_class(**self.context.hyperparameters)
-        else:
-            model_instance = model_class()
-
-        return [(self.context.task, model_instance)]
+# 3. Create the unified Scikit-Learn Pipeline
+self.pipeline = Pipeline(self.pipeline_steps)
 ```
 
-The resulting tuple `[(task_name, model_instance)]` is appended as the final step in the pipeline.
+Because the model is just the final step in the pipeline:
+- Calling `pipeline.fit(X_train, y_train)` fits all preprocessing transformers first, then fits the model on the transformed features.
+- Calling `pipeline.predict(X_test)` runs test data through all transformers first, then outputs predictions.

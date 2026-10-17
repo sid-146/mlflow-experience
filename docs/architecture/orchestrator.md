@@ -1,88 +1,91 @@
 # The Orchestrator Engine
 
-The `Orchestrator` (`src.orchestrator.Orchestrator`) is the central execution conductor of `mlflow-experience`. It manages the lifecycle of an experiment run, coordinating builders, transformers, estimators, and observability trackers.
+The `Orchestrator` class (`src/orchestrator.py`) is the main coordinator of the whole pipeline.
 
 ---
 
-## Context Manager Protocol
+## How It Is Used
 
-The `Orchestrator` implements Python's context manager protocol (`__enter__` and `__exit__`), guaranteeing that runtime resources are cleanly managed and artifacts are saved even if an unexpected exception occurs:
+In `main.py`, the `Orchestrator` is executed as a Python context manager:
 
 ```python
+from src.core.context.contexts import RunContext
+from src.orchestrator import Orchestrator
+
+# 1. Parse and validate the YAML dictionary into a RunContext
+context = RunContext.from_yaml_dict(config)
+
+# 2. Run the pipeline inside the context manager
 with Orchestrator(context) as orchestrator:
     orchestrator.build()
     orchestrator.train()
     orchestrator.test()
 ```
 
-### Lifecycle Methods
+Using `with Orchestrator(...) as orchestrator:` ensures that when the run finishes—or even if an unhandled exception crashes the program—the `__exit__` block runs and uploads the session log to MLflow!
+
+---
+
+## The Lifecycle Stages
 
 ```mermaid
 stateDiagram-v2
     [*] --> Initialized: __init__(RunContext)
-    Initialized --> RunActive: __enter__()
-    RunActive --> PipelineBuilt: build()
+    Initialized --> Running: __enter__()
+    Running --> PipelineBuilt: build()
     PipelineBuilt --> ModelTrained: train()
     ModelTrained --> ModelEvaluated: test()
-    ModelEvaluated --> ArtifactsPersisted: __exit__()
-    ArtifactsPersisted --> [*]
+    ModelEvaluated --> LogsPersisted: __exit__()
+    LogsPersisted --> [*]
 ```
 
----
+### 1. Initialization (`__init__`)
+When created, the `Orchestrator` initializes its constituent builders and trackers:
+- `self.data_loader`: Prepares data loading logic.
+- `self.data_splitter`: Prepares data splitting logic.
+- `self.preprocessor`: Prepares the preprocessing transformer factory.
+- `self.model_builder`: Prepares the model estimator factory.
+- `self.mlflow_tracker`: Connects to the MLflow tracking server.
 
-## Method Breakdown
+### 2. Build Stage (`orchestrator.build()`)
+This method puts the pieces together:
+1. Calls `self.mlflow_tracker.start_run()` to start a new experiment run in MLflow.
+2. Calls `self.data_loader.load_data()` to read the data from disk.
+3. If no separate test file was provided in the YAML, calls `self.data_splitter.split(X, y)` to partition the data into training and testing sets.
+4. Calls `self.preprocessor.build()` to get a list of Scikit-Learn transformer tuples `[(name, transformer), ...]`.
+5. Calls `self.model_builder.build()` to get the estimator tuple `[(task_name, model)]`.
+6. Combines the transformer steps and model step into `self.pipeline = Pipeline(self.pipeline_steps)`.
 
-### 1. `__init__(context: RunContext)`
-
-Instantiates the necessary builder and tracking objects using the passed configuration context:
-
-- `self.data_loader = DataLoader(context=context)`
-- `self.data_splitter = DataSplitter(context=context)`
-- `self.preprocessor = PreprocessingPipeline(context=context)`
-- `self.model_builder = ModelBuilder(context=context.model)`
-- `self.mlflow_tracker = MLflowTracker(context=context)`
-
-### 2. `build()`
-
-Compiles the end-to-end pipeline:
-
-1. **Initializes MLflow Run**: Calls `self.mlflow_tracker.start_run()`.
-2. **Loads Raw Data**: Calls `self.data_loader.load_data()`.
-3. **Executes Train-Test Split**: If no dedicated test set is supplied, partitions the dataset via `self.data_splitter.split()`.
-4. **Builds Preprocessing Steps**: Calls `self.preprocessor.build()` to get instantiated transformers.
-5. **Builds Model Step**: Calls `self.model_builder.build()` to instantiate the target estimator.
-6. **Creates Pipeline**: Instantiates `self.pipeline = Pipeline(self.pipeline_steps)`.
-
-### 3. `train()`
-
-Fits the pipeline on the training data:
-
+### 3. Training Stage (`orchestrator.train()`)
+Fits the compiled pipeline:
 ```python
 self.pipeline = self.pipeline.fit(self.data_loader.X, self.data_loader.y)
 ```
+Then predicts on the training data and calls `self.evaluate()` to log in-sample performance metrics.
 
-Generates in-sample predictions and computes baseline training metrics.
-
-### 4. `test()`
-
-Evaluates out-of-sample performance on the holdout test set:
-
+### 4. Testing Stage (`orchestrator.test()`)
+Evaluates the model on unseen test data:
 ```python
 y_pred = self.pipeline.predict(self.data_loader.X_test)
 self.evaluate(y_true=self.data_loader.y_test, y_pred=y_pred)
 ```
 
-### 5. `evaluate(y_true, y_pred)`
-
-Computes performance metrics (e.g., Accuracy, F1 Score) and logs them to the console and tracking engine.
-
-### 6. `__exit__(exc_type, exc, tb)`
-
-Automatically finds the active execution log file on disk and uploads it as an artifact to MLflow:
-
+### 5. Prediction Stage (`orchestrator.predict(X)`)
+Passes new observations $X$ through the fitted pipeline:
 ```python
-self.mlflow_tracker.log_artifact(
-    console.handlers[1].baseFilename,
-    f"logs/{self.mlflow_tracker.run.info.run_name}.log",
-)
+def predict(self, X):
+    return self.pipeline.predict(X)
 ```
+The data is automatically cleaned, scaled, and encoded using the exact parameters learned during training, and final predictions are returned.
+
+### 6. Exit & Cleanup Stage (`__exit__`)
+When exiting the context manager:
+1. The active session log file is identified from the logger handlers.
+2. The log file is uploaded as an artifact to MLflow:
+   ```python
+   self.mlflow_tracker.log_artifact(
+       console.handlers[1].baseFilename,
+       f"logs/{self.mlflow_tracker.run.info.run_name}.log",
+   )
+   ```
+This guarantees you can always trace back any MLflow run to its exact execution log.
