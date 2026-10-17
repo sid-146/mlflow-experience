@@ -156,7 +156,11 @@ graph TD
 `main.py` defines `run(*args, **kwargs)` but accesses the global variable `config` assigned in the `__main__` block:
 ```python
 def run(*args, **kwargs):
-    context = RunContext.from_yaml_dict(config)  # 'config' is unresolved in function scope!
+    context = RunContext.from_yaml_dict(
+        config
+    )  # 'config' is unresolved in function scope!
+
+
 ...
 if __name__ == "__main__":
     config = config_loader(args.config)
@@ -459,6 +463,8 @@ On Windows platforms, `open()` without an explicit `encoding="utf-8"` relies on 
   ```python
   def run(*args, **kwargs):
       context = RunContext.from_yaml_dict(config)
+
+
   ...
   run(**config)
   ```

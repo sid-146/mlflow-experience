@@ -15,10 +15,12 @@ Define the Pydantic models to validate the YAML settings:
 ```python
 # src/core/context/policies.py
 
+
 class OutlierConfig(ColumnConfig):
     method: Literal["clip", "zscore"] = "clip"
     lower_quantile: Optional[float] = 0.01
     upper_quantile: Optional[float] = 0.99
+
 
 class OutlierPolicy(BaseModel):
     columns: List[OutlierConfig]
@@ -33,6 +35,7 @@ Create a class that inherits from `BaseEstimator` and `TransformerMixin`:
 ```python
 # src/core/pipelines/transformers.py
 from sklearn.base import BaseEstimator, TransformerMixin
+
 
 class OutlierTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, params=None):
@@ -64,6 +67,7 @@ Add your new type to `PreprocessingRegistry`:
 
 ```python
 # src/core/constants/registry.py
+
 
 class PreprocessingRegistry(str, Enum):
     # ... existing entries ...

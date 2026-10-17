@@ -421,6 +421,7 @@ Standard Scikit-Learn transformers convert tabular Pandas DataFrames into NumPy 
 
 ```python
 from sklearn import set_config
+
 set_config(transform_output="pandas")
 ```
 
@@ -665,6 +666,7 @@ To add a new data transformation step (e.g., an Outlier Clipper):
         lower_quantile: Optional[float] = 0.01
         upper_quantile: Optional[float] = 0.99
 
+
     class OutlierPolicy(BaseModel):
         columns: List[OutlierConfig]
     ```
@@ -731,6 +733,7 @@ To add a new data transformation step (e.g., an Outlier Clipper):
 
     ```python
     from sklearn.ensemble import RandomForestClassifier
+
 
     class ModelType(str, Enum):
         logistic_regression = "logistic_regression"
@@ -841,7 +844,9 @@ def track_node(tracker):
             tracker.log_metric("output_rows", output.shape[0])
             tracker.end_run()
             return output
+
         return wrapper
+
     return decorator
 ```
 

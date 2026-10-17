@@ -13,7 +13,7 @@ Open `src/core/constants/constants.py` and add the format string:
 
 FILE_TYPES = Literal[
     "csv",
-    "parquet",   # <--- Add this
+    "parquet",  # <--- Add this
     "excel",
     "xlsx",
     "json",

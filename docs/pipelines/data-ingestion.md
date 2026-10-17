@@ -67,9 +67,10 @@ When data is loaded:
 - If you only provide `dataset.train`, `DataSplitter` calls Scikit-Learn's `train_test_split`:
   ```python
   x_train, x_test, y_train, y_test = train_test_split(
-      X, y,
+      X,
+      y,
       test_size=context.dataset.train_test_split or 0.2,
-      random_state=context.dataset.random_state or 42
+      random_state=context.dataset.random_state or 42,
   )
   ```
 

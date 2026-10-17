@@ -17,7 +17,7 @@ The `PreprocessingPipeline` class (`src/core/pipelines/preprocessing.py`) turns 
     ("rename_columns", RenameColumnsTransformer(...)),
     ("handle_missing", MissingValueTransformer(...)),
     ("encode_features", EncodingTransformer(...)),
-    ("scale_features", ScalingTransformer(...))
+    ("scale_features", ScalingTransformer(...)),
 ]
 ```
 
