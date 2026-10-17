@@ -1,100 +1,258 @@
-# YAML Schema Specification
+# YAML Configuration Reference
 
-Every experiment in `mlflow-experience` is defined through a structured YAML file. This document details each top-level section and its allowed keys.
+This guide is the complete reference for every section and option you can put in your experiment YAML file.
 
 ---
 
-## Top-Level Schema Overview
+## Structure Overview
+
+Every configuration file has 7 top-level sections:
 
 ```yaml
-project:       # Metadata about the project and ownership
-mlflow:        # MLflow server tracking settings and tags
-dataset:       # Ingestion sources and train/test partition directives
-preprocessing: # Ordered list of transformation steps
-model:         # Model family, task, and hyperparameters
-training:      # Training objective directives
-evaluation:    # Evaluation metrics to compute
+project:       # Who owns this experiment and what environment is it for?
+mlflow:        # Where should MLflow log the run and what should it track?
+dataset:       # What data are we training on, and how should it be split?
+preprocessing: # What cleaning, imputation, encoding, and scaling steps are needed?
+model:         # Which machine learning model should we train?
+training:      # What is the training objective?
+evaluation:    # Which evaluation metrics should be reported?
 ```
 
 ---
 
-## 1. `project` Section
+## 1. `project`
 
-Defines organizational metadata and provenance.
+Defines basic metadata for organizational tracking.
 
-| Key | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `name` | `string` | **Yes** | Project identifier (e.g., `customer_churn_prediction`). |
-| `owner` | `string` | **Yes** | Responsible team or engineer (e.g., `data_science_team`). |
-| `environment` | `string` | **Yes** | Execution stage (e.g., `development`, `staging`, `production`). |
-| `description` | `string` | No | Free-text description of the project goal. |
-
----
-
-## 2. `mlflow` Section
-
-Governs telemetry, tracking URIs, and artifact capture.
-
-| Key | Type | Required | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `experiment_name` | `string` | **Yes** | — | Name of the MLflow experiment. Automatically created if not found. |
-| `tracking_uri` | `string` | No | `http://localhost:5000` | Remote or local tracking server URL. |
-| `track_params` | `boolean` | No | `true` | Whether to automatically log configuration parameters. |
-| `track_metrics` | `boolean` | No | `true` | Whether to automatically log computed evaluation metrics. |
-| `track_artifacts`| `list[string]`| No | `[]` | List of artifact categories to log. |
-| `tags` | `dict[string, string]` | No | `{}` | Custom key-value pairs assigned to the MLflow run. |
+```yaml
+project:
+  name: customer_churn_prediction  # Project identifier (string)
+  owner: data_science_team          # Team or author name (string)
+  environment: production           # "development", "staging", or "production"
+  description: Telecom churn model  # Optional human description (string)
+```
 
 ---
 
-## 3. `dataset` Section
+## 2. `mlflow`
 
-Directs data acquisition, file formats, and train/test splitting.
+Controls where experiment results, metrics, parameters, and models are sent.
 
-| Key | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `dataset_name` | `string` | **Yes** | Logical dataset label (e.g., `telecom_churn_v1`). |
-| `random_state` | `integer` | **Yes** | Seed for reproducible pseudo-random data splitting. |
-| `train_test_split` | `float` | No | Proportion of data reserved for testing if `test` source is omitted (e.g., `0.2`). |
-| `train` | `DatasetPolicy` | **Yes** | Training data source definition. |
-| `test` | `DatasetPolicy` | No | Optional dedicated holdout evaluation data source. |
+```yaml
+mlflow:
+  experiment_name: customer_churn_experiments  # MLflow experiment name (created if missing)
+  tracking_uri: http://localhost:5000         # MLflow server URL (default: http://localhost:5000)
+  track_params: true                          # Log hyperparameters and options (default: true)
+  track_metrics: true                         # Log evaluation metrics (default: true)
+  track_artifacts:                            # Optional list of artifact names to log
+    - model
+    - preprocessing_objects
+  tags:                                       # Custom key-value tags for easy filtering in UI
+    stage: production
+    team: analytics
+```
 
-### `DatasetPolicy` Attributes
-- `type` (`"csv" | "parquet" | "excel" | "xlsx"`): File format.
-- `path` (`string`): Absolute or relative file path on disk.
-- `id_column` (`string`): Primary key or identifier column.
-- `target_column` (`string`): Label or ground-truth prediction target column.
-
----
-
-## 4. `preprocessing` Section
-
-A list of step definitions executed sequentially. Each item specifies:
-- `name` (`string`): Unique step identifier.
-- `type` (`string`): Preprocessing operation corresponding to `PreprocessingRegistry`:
-  - `rename`: Rename columns.
-  - `type_cast`: Enforce specific column dtypes.
-  - `missing`: Impute missing values.
-  - `encoding`: Categorical feature encoding (one-hot, ordinal).
-  - `scaling`: Numerical feature scaling (standard, minmax, robust).
-  - `cleaning`: Arbitrary value replacement.
-  - `filter`: Row-level logical query filtering.
-- `params` (`dict`): Parameter dictionary or policy definition.
+!!! tip "Running without Docker"
+    If you are not running a Docker MLflow server on port 5000, you can set `tracking_uri: sqlite:///mlflow.db` or `tracking_uri: file:./mlruns` to track everything locally!
 
 ---
 
-## 5. `model` Section
+## 3. `dataset`
 
-Defines the predictive estimator architecture.
+Specifies where to load the training (and optional test) data and how to handle targets and splitting.
 
-| Key | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `type` | `string` | **Yes** | Estimator family (`logistic_regression`, `xgboost`, `random_forest`). |
-| `task` | `string` | **Yes** | Task definition (e.g., `binary:classification`). |
-| `hyperparameters` | `dict` | No | Keyword arguments passed directly to the model constructor. |
+```yaml
+dataset:
+  dataset_name: telecom_churn_v1 # Dataset name label
+  random_state: 42               # Seed for reproducible splitting (integer >= 0)
+  train_test_split: 0.2          # Ratio to reserve for testing if no test dataset is given (e.g. 0.2 = 20%)
+
+  # Training dataset source (Required)
+  train:
+    type: csv                    # "csv", "excel", "xlsx", or "json"
+    path: data/raw/churn_train.csv # Path to the file (relative or absolute)
+    id_column: CustomerID        # Unique identifier column (ignored during training)
+    target_column: Churn         # Target variable column to predict
+
+  # Dedicated test dataset source (Optional)
+  test:
+    type: csv
+    path: data/raw/churn_test.csv
+    id_column: CustomerID
+    target_column: Churn
+```
 
 ---
 
-## 6. `training` & `evaluation` Sections
+## 4. `preprocessing`
 
-- `training.objective` (`string`): Loss function or training objective (e.g., `binary:logistic`).
-- `evaluation.metrics` (`list[string]`): Target metrics to calculate and record (e.g., `["accuracy", "f1"]`).
+An ordered list of transformation steps. Steps execute in the exact order you write them.
+
+Each step has:
+- `name`: A descriptive name for the step (e.g. `handle_missing_age`).
+- `type`: The transformer type matching `PreprocessingRegistry`.
+- `params`: The options for that transformer.
+
+Here are the supported preprocessing types and their parameters:
+
+### A. `rename` (Rename Columns)
+Renames raw column headers (e.g. stripping spaces, standardizing to lowercase snake_case):
+
+```yaml
+- name: rename_columns
+  type: rename
+  params:
+    mapping:
+      "Customer ID": customer_id
+      "Total Spend": total_spend
+      "Support Calls": support_calls
+```
+
+### B. `type_cast` (Cast Data Types)
+Converts column data types:
+
+```yaml
+- name: cast_types
+  type: type_cast
+  params:
+    columns:
+      - name: age
+        dtype: int
+      - name: gender
+        dtype: str
+      - name: tenure
+        dtype: int
+```
+
+### C. `missing` (Impute Missing Values)
+Handles missing values on a per-column basis:
+
+```yaml
+- name: handle_missing
+  type: missing
+  params:
+    columns:
+      - name: age
+        strategy: mean         # Options: mean, median, mode, constant
+
+      - name: support_calls
+        strategy: median
+
+      - name: gender
+        strategy: mode         # Uses the most frequent value
+
+      - name: city
+        strategy: constant     # Injects a custom fill value
+        fill_value: "Unknown"
+```
+
+### D. `encoding` (Categorical Encoding)
+Encodes categorical text columns into numbers:
+
+```yaml
+- name: encode_features
+  type: encoding
+  params:
+    columns:
+      # Ordinal encoding: Maps values to integers using the exact order specified
+      - name: contract_length
+        strategy: ordinal
+        order: ['Monthly', 'Quarterly', 'Annual']
+
+      - name: gender
+        strategy: ordinal
+        order: ['Male', 'Female']
+
+      # One-Hot encoding: Creates binary indicator columns for each category
+      - name: subscription_type
+        strategy: one_hot
+```
+
+### E. `scaling` (Numerical Feature Scaling)
+Scales numeric features to standard ranges:
+
+```yaml
+- name: scale_features
+  type: scaling
+  params:
+    columns:
+      # StandardScaler: Zero mean, unit variance
+      - name: age
+        strategy: standard
+
+      # MinMaxScaler: Scaled to [0, 1] range
+      - name: total_spend
+        strategy: minmax
+
+      # RobustScaler: Scaled using median and interquartile range (outlier-resilient)
+      - name: payment_delay
+        strategy: robust
+```
+
+### F. `cleaning` (Value Replacement)
+Replaces specific values or fixes typos:
+
+```yaml
+- name: clean_categories
+  type: cleaning
+  params:
+    replacements:
+      contract:
+        "month-to-month": "Monthly"
+        "12 Month": "Annual"
+```
+
+### G. `filter` (Row Filtering)
+Filters rows based on a query condition:
+
+```yaml
+- name: remove_invalid_tenure
+  type: filter
+  params:
+    condition: "tenure >= 0 and total_spend >= 0"
+```
+
+---
+
+## 5. `model`
+
+Defines which model to train and its hyperparameters.
+
+```yaml
+model:
+  type: logistic_regression          # "logistic_regression" or "xgboost"
+  task: 'binary:classification'      # Task identifier name
+  hyperparameters:                   # Passed directly to the model constructor
+    C: 1.0
+    max_iter: 250
+    solver: saga
+```
+
+For XGBoost:
+
+```yaml
+model:
+  type: xgboost
+  task: 'xgboost:classification'
+  hyperparameters:
+    n_estimators: 500
+    learning_rate: 0.01
+    max_depth: 6
+    random_state: 42
+```
+
+---
+
+## 6. `training` & `evaluation`
+
+Defines training objective flags and the metrics to calculate:
+
+```yaml
+training:
+  objective: binary:logistic
+
+evaluation:
+  metrics:
+    - accuracy
+    - f1
+```

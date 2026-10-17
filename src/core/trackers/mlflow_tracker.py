@@ -1,3 +1,4 @@
+import os
 from typing import Optional 
 
 import mlflow
@@ -14,9 +15,12 @@ class MLflowTracker:
         self.context = context
         self.experiment_name = context.mlflow.experiment_name or "default"
         self.experiment_id = context.mlflow.experiment_id or "placeholder"
-        self.tracking_uri = context.mlflow.tracking_uri or "http://localhost:5000"
+        self.tracking_uri = context.mlflow.tracking_uri or os.getenv(
+            "MLFLOW_TRACKING_URI", "http://localhost:5000"
+        )
         mlflow.set_tracking_uri(self.tracking_uri)
 
+        self.run = None
         self.run_id: Optional[str] = None
         console.debug("MLFlow tracker initialized for experiment...")
 

@@ -1,45 +1,51 @@
-# Preprocessing Engine
+# Preprocessing Pipeline
 
-The `PreprocessingPipeline` (`src.core.pipelines.preprocessing`) compiles the declarative list of preprocessing steps into Scikit-Learn transformer instances.
+The `PreprocessingPipeline` class (`src/core/pipelines/preprocessing.py`) turns the list of steps in your YAML file into executable Scikit-Learn transformer instances.
 
 ---
 
-## Assembly Logic
+## How It Works
 
-When `preprocessor.build()` is invoked by the `Orchestrator`:
-
-1. It iterates through each `PreprocessingContext` in `context.preprocessing`.
-2. Looks up the matching transformer class via `step.type.transformer_class` in `PreprocessingRegistry`.
-3. Dynamically instantiates the transformer with its strongly-typed policy parameters:
+1. The `Orchestrator` calls `preprocessor.build()`.
+2. It loops over every step defined in your `preprocessing` YAML list.
+3. For each step, it looks up the matching transformer class in `PreprocessingRegistry`.
+4. It instantiates the transformer with the validated parameters.
+5. It returns a list of `(name, transformer_instance)` tuples ready to be passed to Scikit-Learn's `Pipeline`:
 
 ```python
-def _instantiate_transformer(self, transformer_class, params):
-    if hasattr(params, "mapping"):  # RenamePolicy
-        return transformer_class(mapping=params.mapping)
-    elif hasattr(params, "columns"):  # MissingValuePolicy, EncodingPolicy, ScalingPolicy
-        return transformer_class(params=params)
-    else:
-        try:
-            return transformer_class(**params.dict())
-        except (AttributeError, TypeError):
-            return transformer_class(**params) if isinstance(params, dict) else transformer_class()
+[
+    ("rename_columns", RenameColumnsTransformer(...)),
+    ("handle_missing", MissingValueTransformer(...)),
+    ("encode_features", EncodingTransformer(...)),
+    ("scale_features", ScalingTransformer(...))
+]
 ```
-
-4. Appends a tuple of `(step.name, transformer_instance)` to `self.steps`.
-5. Returns the completed list of steps to be included in the Scikit-Learn `Pipeline`.
 
 ---
 
-## Registry Mapping
+## The Registry Mapping
 
-The `PreprocessingRegistry` enum maps YAML identifiers to their transformer implementations:
+`PreprocessingRegistry` connects the string `type` in your YAML to the Python class:
 
-| YAML `type` | Enum Member | Policy Class | Transformer Class |
-| :--- | :--- | :--- | :--- |
-| `rename` | `rename_columns` | `RenamePolicy` | `RenameColumnsTransformer` |
-| `type_cast` | `type_cast` | `TypeCastPolicy` | Custom Type Cast logic |
-| `missing` | `missing_values` | `MissingValuePolicy` | `MissingValueTransformer` |
-| `encoding` | `encoding` | `EncodingPolicy` | `EncodingTransformer` |
-| `scaling` | `scaling` | `ScalingPolicy` | `ScalingTransformer` |
-| `cleaning` | `cleaning` | — | `CleaningTransformer` |
-| `filter` | `filter` | — | `FilterTransformer` |
+| YAML `type` | Transformer Class | Policy Model |
+| :--- | :--- | :--- |
+| `rename` | `RenameColumnsTransformer` | `RenamePolicy` |
+| `missing` | `MissingValueTransformer` | `MissingValuePolicy` |
+| `encoding` | `EncodingTransformer` | `EncodingPolicy` |
+| `scaling` | `ScalingTransformer` | `ScalingPolicy` |
+| `cleaning` | `CleaningTransformer` | *(dict of replacements)* |
+| `filter` | `FilterTransformer` | *(query condition string)* |
+
+---
+
+## Order of Execution
+
+Steps execute in the exact order you define them in YAML. For example:
+
+1. **Rename first**: Standardize column names (e.g. `"Total Spend"` $\to$ `total_spend`).
+2. **Handle missing values**: Impute null values with mean, median, mode, or constant.
+3. **Encode categories**: Convert string categories into numbers.
+4. **Scale numeric features**: Apply standard scaling or min-max normalization.
+
+!!! warning "Column Name Dependencies"
+    If you rename a column in step 1, remember to use the **new** name in subsequent steps (such as imputation, encoding, and scaling)!

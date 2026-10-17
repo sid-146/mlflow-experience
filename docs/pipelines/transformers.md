@@ -1,12 +1,14 @@
-# Custom Transformers
+# Custom Transformers Reference
 
-All transformers in `mlflow-experience` (`src.core.pipelines.transformers`) adhere to Scikit-Learn's `BaseEstimator` and `TransformerMixin` contracts.
+All transformers in `mlflow-experience` live in `src/core/pipelines/transformers.py`. They inherit from Scikit-Learn's `BaseEstimator` and `TransformerMixin` and are designed to work seamlessly within `sklearn.pipeline.Pipeline`.
 
 ---
 
-## 1. Global DataFrame Output Configuration
+## Retaining DataFrame Format
 
-By default, Scikit-Learn converts Pandas DataFrames into NumPy ndarrays upon transformation. `mlflow-experience` configures Scikit-Learn to output DataFrames globally:
+By default, Scikit-Learn transformers convert DataFrames into NumPy arrays. This strips column names and makes debugging painful.
+
+We enable Pandas output globally:
 
 ```python
 from sklearn import set_config
@@ -14,65 +16,152 @@ from sklearn import set_config
 set_config(transform_output="pandas")
 ```
 
-This guarantees that downstream transformers and debugging steps retain original column names and pandas metadata.
+Every transformer takes a Pandas DataFrame as input and outputs a Pandas DataFrame with column names preserved.
 
 ---
 
-## 2. Transformer Implementations
+## 1. `RenameColumnsTransformer`
 
-### `RenameColumnsTransformer`
-Applies a dictionary column mapping:
-```python
-class RenameColumnsTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, mapping=None):
-        self.mapping = mapping
+**Purpose**: Renames columns in the DataFrame based on a dictionary mapping.
 
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return X.rename(columns=self.mapping) if self.mapping else X
+### YAML Example
+```yaml
+- name: rename_columns
+  type: rename
+  params:
+    mapping:
+      "Customer ID": customer_id
+      "Total Spend": total_spend
 ```
 
----
-
-### `MissingValueTransformer`
-Computes column-specific statistics during `fit()` and applies them during `transform()`:
-- `mean`: Column mean computed on training data.
-- `median`: Column median computed on training data.
-- `mode`: Most frequent value computed on training data.
-- `constant`: Injects user-specified `fill_value`.
+### Python Logic
+- `fit(X, y)`: Does nothing (stateless). Returns `self`.
+- `transform(X)`: Calls `X.rename(columns=self.mapping)`.
 
 ---
 
-### `CleaningTransformer`
-Replaces arbitrary string patterns or invalid values across specified columns using dictionary replacements.
+## 2. `MissingValueTransformer`
 
----
+**Purpose**: Imputes missing (null/NaN) values using column-specific strategies.
 
-### `FilterTransformer`
-Executes row-level filtering based on logical expressions (`X.query(condition)`).
+### Supported Strategies
+- `mean`: Fills missing values with the column mean (numerical).
+- `median`: Fills missing values with the column median (numerical).
+- `mode`: Fills missing values with the most frequent value (categorical/numerical).
+- `constant`: Fills missing values with a specific `fill_value`.
 
----
-
-### `ScalingTransformer`
-Dynamically groups columns by strategy (`standard`, `minmax`, `robust`) and wraps them in a Scikit-Learn `ColumnTransformer(remainder="passthrough")`:
-```python
-self._strategy_map = {
-    "standard": StandardScaler(),
-    "minmax": MinMaxScaler(),
-    "robust": RobustScaler(),
-}
+### YAML Example
+```yaml
+- name: handle_missing
+  type: missing
+  params:
+    columns:
+      - name: age
+        strategy: mean
+      - name: gender
+        strategy: mode
+      - name: city
+        strategy: constant
+        fill_value: "Unknown"
 ```
 
+### State Learning
+- `fit(X, y)`: Computes the mean, median, mode, or constant on the **training set only** and stores them in `self.fill_values[col_name]`.
+- `transform(X)`: Calls `X.fillna(self.fill_values)`.
+
 ---
 
-### `EncodingTransformer`
-Groups categorical columns by encoding type (`one_hot`, `ordinal`) and wraps them in a `ColumnTransformer`:
-```python
-self._strategy_map = {
-    "one_hot": OneHotEncoder(handle_unknown="ignore", sparse_output=False),
-    "ordinal": OrdinalEncoder(),
-}
+## 3. `ScalingTransformer`
+
+**Purpose**: Scales numerical columns using different scalers without writing multiple separate steps.
+
+### Supported Strategies
+- `standard`: `StandardScaler()` (mean = 0, variance = 1).
+- `minmax`: `MinMaxScaler()` (scaled to $[0, 1]$).
+- `robust`: `RobustScaler()` (uses median and interquartile range to handle outliers).
+
+### YAML Example
+```yaml
+- name: scale_features
+  type: scaling
+  params:
+    columns:
+      - name: age
+        strategy: standard
+      - name: total_spend
+        strategy: minmax
 ```
-Columns not explicitly listed for encoding are preserved via `remainder="passthrough"`.
+
+### How It Works Under the Hood
+`ScalingTransformer` groups columns by strategy and builds a Scikit-Learn `ColumnTransformer`:
+- Columns using `standard` are routed to `StandardScaler()`.
+- Columns using `minmax` are routed to `MinMaxScaler()`.
+- Any unmentioned columns pass through untouched via `remainder="passthrough"`.
+
+---
+
+## 4. `EncodingTransformer`
+
+**Purpose**: Converts categorical text columns into numbers for machine learning models.
+
+### Supported Strategies
+- `ordinal`: Uses `OrdinalEncoder()` with an explicit `order` list.
+- `one_hot`: Uses `OneHotEncoder(sparse_output=False, handle_unknown="ignore")`.
+
+### YAML Example
+```yaml
+- name: encode_features
+  type: encoding
+  params:
+    columns:
+      # Ordinal: preserves rank order
+      - name: contract_length
+        strategy: ordinal
+        order: ['Monthly', 'Quarterly', 'Annual']
+
+      # One-Hot: creates binary dummy columns
+      - name: subscription_type
+        strategy: one_hot
+```
+
+### How It Works Under the Hood
+Columns are grouped by strategy into a `ColumnTransformer`. One-hot encoding creates new columns (e.g. `subscription_type_Basic`, `subscription_type_Premium`), and unmentioned columns are preserved.
+
+---
+
+## 5. `CleaningTransformer`
+
+**Purpose**: Replaces specific categorical values or fixes inconsistencies.
+
+### YAML Example
+```yaml
+- name: clean_categories
+  type: cleaning
+  params:
+    replacements:
+      contract:
+        "month-to-month": "Monthly"
+        "12 Month": "Annual"
+```
+
+### Python Logic
+- `transform(X)`: Loops over the columns and applies `X[col].replace(mapping)`.
+
+---
+
+## 6. `FilterTransformer`
+
+**Purpose**: Filters rows based on a query condition.
+
+### YAML Example
+```yaml
+- name: filter_valid_rows
+  type: filter
+  params:
+    condition: "tenure >= 0 and total_spend >= 0"
+```
+
+### Python Logic
+- `transform(X)`: Calls `X.query(self.condition)`.
+
+*(Note: Row drops are best used during initial raw data preparation so the feature matrix $X$ and target vector $y$ stay aligned).*

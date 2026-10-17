@@ -209,3 +209,9 @@ __marimo__/
 
 volumes
 *temp*
+
+# MLflow local tracking
+mlflow.db
+mlflow.db-journal
+mlruns/
+mlartifacts/

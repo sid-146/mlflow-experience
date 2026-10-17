@@ -160,8 +160,12 @@ class Orchestrator:
         console.info("--- Evaluation Complete ---")
 
     def __exit__(self, exc_type, exc, tb):
-        # Can add exist logic here, like uploading artifacts or any cleanup.
-        self.mlflow_tracker.log_artifact(
-            console.handlers[1].baseFilename,
-            f"logs/{self.mlflow_tracker.run.info.run_name}.log",
-        )
+        # Can add exit logic here, like uploading artifacts or any cleanup.
+        if (
+            hasattr(self, "mlflow_tracker")
+            and getattr(self.mlflow_tracker, "run", None) is not None
+        ):
+            self.mlflow_tracker.log_artifact(
+                console.handlers[1].baseFilename,
+                f"logs/{self.mlflow_tracker.run.info.run_name}.log",
+            )

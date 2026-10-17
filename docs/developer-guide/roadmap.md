@@ -1,74 +1,70 @@
 # Architectural Roadmap
 
-This document outlines key technical evolution milestones for `mlflow-experience`.
+This document outlines upcoming architectural enhancements planned for `mlflow-experience`.
+
+!!! tip "Full Future Capabilities Matrix"
+    For an in-depth exploration of 8 future scenarios (Autonomous Agents, Cloud Lakehouses, Optuna HPO, Production Serving, and Monitoring), read the full [Future Enhancements & Scenarios](future-enhancements.md) guide.
 
 ---
 
 ## 1. Directed Acyclic Graph (DAG) Pipeline Engine
 
-### The Problem
+### Current Design: Linear Pipeline
+Currently, the pipeline executes sequentially:
+$$\text{Step 1} \to \text{Step 2} \to \text{Step 3} \to \text{Step 4}$$
 
-Linear Scikit-Learn pipelines force every step to execute in a single strict sequence ($Step_1 \to Step_2 \to Step_3$). Real-world data science projects require branching flows:
+### Planned Design: DAG Execution
+Real-world feature engineering often requires branching (e.g. processing text features and numeric features independently, then merging them before the model):
 
-- Separate numeric and text pipelines that execute independently and merge downstream.
-- Parallel transformer paths.
+```mermaid
+graph TD
+    Raw[Raw Ingestion] --> Clean[Clean & Impute]
+    Clean --> NumBranch[Numeric Scaling]
+    Clean --> CatBranch[Categorical Encoding]
+    NumBranch --> Merge[Merge Features]
+    CatBranch --> Merge
+    Merge --> Model[Model Estimator]
+```
 
-### Target Architecture
-
-A DAG engine that:
-
-1. Accepts explicit node dependencies in YAML:
-    ```yaml
-    pipeline:
-        nodes:
-            - name: clean
-              type: cleaning
-            - name: num_scaling
-              type: scaling
-              depends_on: [clean]
-            - name: cat_encoding
-              type: encoding
-              depends_on: [clean]
-            - name: merge
-              type: merge
-              depends_on: [num_scaling, cat_encoding]
-    ```
-2. Resolves execution order dynamically using **Topological Sorting** (Kahn's algorithm or DFS).
-3. Detects and prevents circular graph cycles at build time.
+**Key Improvements:**
+- Explicit `depends_on` definitions in YAML for each node.
+- Automatic dependency ordering via **Topological Sorting**.
+- Cycle detection to prevent infinite loops.
 
 ---
 
-## 2. Nested MLflow Runs & Automatic Node Decorators
+## 2. Nested MLflow Runs & `@track_node` Decorator
 
-### The Problem
+### Current Design
+The entire pipeline runs inside one parent MLflow run.
 
-Currently, the entire pipeline is tracked within a single MLflow run. Debugging failures in specific transformation steps requires reading text logs.
-
-### Target Architecture
-
-Introduce hierarchical parent-child runs:
+### Planned Design
+Each step in the pipeline automatically creates a nested child run in MLflow:
 
 ```text
-pipeline_run (Parent)
- ├── clean (Child Run)
+customer_churn_pipeline (Parent Run)
+ ├── rename_columns (Child Run)
  ├── handle_missing (Child Run)
  ├── encode_features (Child Run)
  ├── scale_features (Child Run)
  └── model_fit (Child Run)
 ```
 
-By wrapping transformer execution in a `@track_node` decorator, each step automatically records:
-
-- Input/output row and column shapes.
-- Step execution duration in milliseconds.
-- Step parameters and missing-value counts.
+By wrapping transformer execution in a `@track_node` decorator:
+- Each step automatically logs input shape, output shape, and execution time in milliseconds.
+- Pinpoints the exact step where an error or data anomaly occurred.
 
 ---
 
-## 3. Feature Engineering Factory
+## 3. Configurable Feature Engineering Factories
 
-Formalize the placeholder in `src.core.pipelines.features` into a configurable feature factory:
+Formalize `src/core/pipelines/features.py` into a modular feature generator:
+- **Aggregations**: Group-by calculations (e.g. average monthly spend per user).
+- **Interactions**: Automated ratio, difference, and product features (e.g. `total_spend / tenure`).
+- **Temporal Transformations**: Sine/Cosine cyclic encoding for dates, day-of-week extraction, and rolling metrics.
 
-- **Statistical Aggregations**: Group-by operations (mean, std, min, max, count).
-- **Interactions**: Automated ratio, difference, and polynomial feature generation.
-- **Temporal Transformations**: Cyclical Sine/Cosine encoding of calendar dates and rolling window metrics.
+---
+
+## 4. Visual Pipeline Builder UI
+
+An optional browser-based UI to visually build, edit, and export YAML configurations without manual typing.

@@ -7,6 +7,9 @@
 [![MLflow](https://img.shields.io/badge/mlflow-3.9.0-0194E2.svg)](https://mlflow.org/)
 [![Pydantic](https://img.shields.io/badge/pydantic-v2.12.5-E92063.svg)](https://docs.pydantic.dev/)
 [![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg)](https://www.docker.com/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-brightgreen.svg)](https://sid-146.github.io/mlflow-experience/)
+
+> 📖 **Full Documentation Website**: [https://sid-146.github.io/mlflow-experience/](https://sid-146.github.io/mlflow-experience/)
 
 ---
 
@@ -168,6 +171,8 @@ mlflow-experience/
 ├── README.md                         # Project documentation and architectural manual
 ├── requirements.txt                  # Pinned Python package dependencies
 ├── Todo.md                           # Development backlog and task tracking
+├── AGENTS.md                         # Operational instructions and invariants for AI coding agents
+├── FUTURE_ENHANCEMENTS.md            # Comprehensive future scenarios & evolutionary roadmap
 │
 ├── configs/                          # Declarative YAML experiment configuration files
 │   ├── demo.yaml                     # Production-style experiment schema specification
@@ -778,6 +783,9 @@ To support Apache Parquet or SQL databases:
 ---
 
 ## Architecture Evolution & Roadmap
+
+> [!TIP]
+> For an in-depth breakdown of 8 future architectural scenarios, proposed YAML schemas, and phased milestones, see the dedicated [Future Enhancements Guide](FUTURE_ENHANCEMENTS.md).
 
 ### Transition from Linear Pipeline to DAG Engine
 

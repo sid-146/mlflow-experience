@@ -1,50 +1,66 @@
 # Quickstart Guide
 
-Get up and running with your first machine learning experiment in under two minutes.
+This guide walks you through running your first machine learning experiment and viewing the results.
 
 ---
 
-## 1. Verify Dataset Availability
+## Step 1: Check the Sample Data
 
-The project comes pre-packaged with sample datasets inside `data/raw/`:
+The repository includes a ready-to-use customer churn dataset in `data/raw/`:
+- `data/raw/churn_train.csv`: Training dataset containing 400,000+ customer records.
+- `data/raw/churn_test.csv`: Holdout testing dataset.
 
-- `data/raw/churn_train.csv`: Telecom customer churn training data.
-- `data/raw/churn_test.csv`: Telecom customer churn holdout test data.
-
-Verify that the training data exists:
-
-=== "Windows (PowerShell)"
-`powershell
-    Test-Path data\raw\churn_train.csv
-    `
-
-=== "Linux / macOS"
-`bash
-    ls -lh data/raw/churn_train.csv
-    `
+Columns in this dataset include:
+- `CustomerID`: Customer identifier.
+- `Age`, `Gender`, `Tenure`: Demographics.
+- `Usage Frequency`, `Support Calls`, `Payment Delay`: Usage statistics.
+- `Subscription Type`, `Contract Length`, `Total Spend`: Account features.
+- `Churn`: The target column (`1` = churned, `0` = retained).
 
 ---
 
-## 2. Launching an Experiment
+## Step 2: Inspect the Configuration
 
-To execute an experiment, invoke the `main` module and supply a YAML configuration path:
-
-```bash
-python -m main --config configs/mvp.yaml --logging-level DEBUG
-```
-
-### CLI Arguments
-
-| Parameter         | Type     | Required | Default  | Description                                                  |
-| :---------------- | :------- | :------- | :------- | :----------------------------------------------------------- |
-| `--config`        | `string` | **Yes**  | —        | Path to the YAML configuration file defining the experiment. |
-| `--logging-level` | `string` | No       | `"INFO"` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).     |
+Take a look at `configs/mvp.yaml`. It defines:
+1. **Experiment Name**: `customer_churn_experiments`
+2. **Data**: Loads `data/raw/churn_train.csv`, marks `Churn` as target, and splits 20% for testing.
+3. **Preprocessing**:
+   - Renames columns to lowercase snake_case.
+   - Casts `Age`, `Gender`, and `Tenure` types.
+   - Imputes missing `Age` with the mean and missing `Gender` with the mode.
+   - Encodes `Gender` and `Contract Length` ordinally, and `Subscription Type` via one-hot encoding.
+   - Standardizes `Age` and min-max scales `Total Spend`.
+4. **Model**: Fits a `LogisticRegression` classifier with `max_iter: 250`.
+5. **Evaluation**: Computes `accuracy` and `f1` score.
 
 ---
 
-## 3. Sample Execution Output
+## Step 3: Run the Experiment
 
-Upon running the pipeline, you will see structured, colorized terminal logs detailing each phase:
+Run the pipeline using `main.py`:
+
+=== "Using uv"
+    ```bash
+    uv run python -m main --config configs/mvp.yaml --logging-level DEBUG
+    ```
+
+=== "Using active virtual environment"
+    ```bash
+    python -m main --config configs/mvp.yaml --logging-level DEBUG
+    ```
+
+### CLI Options Explained
+- `--config` (*required*): Path to the YAML file.
+- `--logging-level` (*optional*, default: `INFO`):
+  - Use `DEBUG` if you want to see detailed step-by-step diagnostic logs.
+  - Use `INFO` for standard progress logs.
+  - Use `WARNING` or `ERROR` for quiet execution.
+
+---
+
+## Step 4: Read the Console Logs
+
+When you run the command, you will see color-coded logs showing progress:
 
 ```text
 DEBUG: 2026-10-14 23:28:15 : main.py : [run] : 11 : Reading data from config
@@ -62,21 +78,22 @@ INFO : 2026-10-14 23:28:18 : orchestrator.py : [evaluate] : 160 : --- Evaluation
 
 ---
 
-## 4. Inspecting Runs in MLflow
+## Step 5: Check Your Run in MLflow
 
-1. Navigate to [http://localhost:5000](http://localhost:5000) in your web browser.
-2. Select the experiment named `customer_churn_experiments`.
-3. View the newly logged run:
-    - **Parameters**: Hyperparameters and model settings.
-    - **Metrics**: Accuracy, F1 score.
-    - **Artifacts**: Check the `logs/` directory in the artifact browser to inspect the full session execution log file.
+1. Open [http://localhost:5000](http://localhost:5000) in your browser.
+2. Click on the experiment `customer_churn_experiments` in the left sidebar.
+3. You will see your run listed with:
+   - **Metrics**: Accuracy, F1 score.
+   - **Artifacts**: Look inside the `logs/` folder in the MLflow UI to view the exact log file for that execution!
 
 ---
 
-## 5. Running with XGBoost
+## Step 6: Try XGBoost
 
-To train a gradient boosted tree model, switch to the XGBoost configuration:
+To train an XGBoost model instead of Logistic Regression, simply pass the XGBoost configuration:
 
 ```bash
-python -m main --config configs/mvp_xgboost.yaml --logging-level INFO
+uv run python -m main --config configs/mvp_xgboost.yaml --logging-level INFO
 ```
+
+Notice that you didn't have to rewrite a single line of Python code—the pipeline handled the model change automatically through configuration.

@@ -1,67 +1,58 @@
-# Architectural Blueprint
+# Architecture Overview
 
-The architecture of `mlflow-experience` is designed around three core principles:
-
-1. **Modularity**: Components are independently testable and easily replaceable.
-2. **Configurability**: Experiment logic is declarative and specified through versioned YAML documents.
-3. **Observability**: Execution events, parameters, metrics, and models are automatically tracked.
+This section explains the design behind `mlflow-experience` so you understand how all the parts fit together.
 
 ---
 
-## The 5 Architectural Layers
+## The Core Idea: Clean Separation of Concerns
 
-The system follows a strict layered pattern, isolating concerns across five distinct tiers:
+In a typical data science project, data loading, cleaning, scaling, feature engineering, modeling, and logging are often mixed together inside a single script or notebook. 
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ Layer 5: Orchestration & Execution (The Conductor)                     │
-│ Orchestrator context manager: build() -> train() -> test() -> exit()   │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │ coordinates
-┌──────────────────────────────────▼─────────────────────────────────────┐
-│ Layer 4: Transformation & ML Logic (The Engine)                        │
-│ PreprocessingPipeline (Transformers) + ModelBuilder (Estimator)        │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │ operates on
-┌──────────────────────────────────▼─────────────────────────────────────┐
-│ Layer 3: Data Management & Ingestion (The I/O Layer)                   │
-│ DataLoader (CSV, Excel, JSON) + DataSplitter (train_test_split)        │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │ consumes
-┌──────────────────────────────────▼─────────────────────────────────────┐
-│ Layer 2: Configuration & Validation (The Brain)                        │
-│ config_loader (YAML) -> RunContext & Pydantic Policies                 │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │ instrumented with
-┌──────────────────────────────────▼─────────────────────────────────────┐
-│ Layer 1: Infrastructure & Observability (The Foundation)               │
-│ MLflowTracker (Runs, Params, Metrics, Artifacts) + Colored Logger      │
-└────────────────────────────────────────────────────────────────────────┘
+`mlflow-experience` separates these tasks into **5 distinct layers**:
+
+```mermaid
+graph TD
+    Layer5["5. Orchestrator (Coordinates the Run)"]
+    Layer4["4. Pipelines & Transformers (Cleans Data & Trains Model)"]
+    Layer3["3. Data Handlers (Loads & Splits Data)"]
+    Layer2["2. Configuration (Validates YAML Settings)"]
+    Layer1["1. Observability (Logs Events & MLflow Artifacts)"]
+
+    Layer5 --> Layer4
+    Layer5 --> Layer3
+    Layer5 --> Layer2
+    Layer5 --> Layer1
 ```
 
 ---
 
-### Layer 1: Infrastructure & Observability
+## The 5 Layers Explained
 
-- **Primary Component**: `MLflowTracker` (`src.core.trackers.mlflow_tracker`) and `console` logger (`src.core.logging.logger`).
-- **Responsibility**: Manages the connection to external tracking systems (e.g. MLflow on PostgreSQL + MinIO S3). Handles experiment initialization, run creation, parameter logging, metric capture, and file artifact streaming upon completion.
+### Layer 1: Infrastructure & Observability (The Foundation)
+- **Files**: `src/core/trackers/mlflow_tracker.py`, `src/core/logging/logger.py`
+- **What it does**: Handles logging and tracking. It connects to MLflow (locally or via Docker), logs your parameters, scores, and models, and writes timestamped logs to `src/core/logs/`.
 
-### Layer 2: Configuration & Validation
+### Layer 2: Configuration & Validation (The Brain)
+- **Files**: `src/core/handler/config/loader.py`, `src/core/context/contexts.py`, `src/core/context/policies.py`
+- **What it does**: Reads your YAML file and validates it using **Pydantic v2**. If you have a typo in a strategy name (e.g. `stragegy: meann`), it throws an error immediately before any heavy data loading or model fitting starts.
 
-- **Primary Component**: `config_loader` (`src.core.handler.config.loader`) and `RunContext` (`src.core.context.contexts`).
-- **Responsibility**: Loads YAML files and enforces strict Pydantic v2 schemas. Translates untyped nested dictionaries into strongly-typed policy objects (`RenamePolicy`, `TypeCastPolicy`, `MissingValuePolicy`, `EncodingPolicy`, `ScalingPolicy`).
+### Layer 3: Data Management (The I/O Layer)
+- **Files**: `src/core/handler/data/loader.py`, `src/core/handler/data/splitter.py`
+- **What it does**: Loads your raw files (CSV, Excel, JSON) into Pandas DataFrames. It finds the file path automatically, separates the target column $y$ from features $X$, and performs train/test splitting.
 
-### Layer 3: Data Management & Ingestion
+### Layer 4: Transformation & ML Logic (The Engine)
+- **Files**: `src/core/pipelines/preprocessing.py`, `src/core/pipelines/transformers.py`, `src/core/pipelines/model_builder.py`
+- **What it does**: Creates Scikit-Learn transformers (imputers, scalers, encoders) from your configuration and wraps them into a single `sklearn.pipeline.Pipeline` with the final model estimator.
 
-- **Primary Component**: `DataLoader` (`src.core.handler.data.loader`) and `DataSplitter` (`src.core.handler.data.splitter`).
-- **Responsibility**: Resolves file paths (absolute, relative, repository root), dispatches the appropriate reader for the file format (`csv`, `excel`, `json`), and executes train-test splits before any feature transformations take place.
+### Layer 5: Orchestration (The Conductor)
+- **Files**: `src/orchestrator.py`
+- **What it does**: Coordinates the entire sequence from start to finish. It manages the lifecycle using Python's context manager (`with Orchestrator(context) as orch:`), guaranteeing that execution logs are safely stored even if an error occurs.
 
-### Layer 4: Transformation & ML Logic
+---
 
-- **Primary Component**: `PreprocessingPipeline` (`src.core.pipelines.preprocessing`), `transformers.py`, and `ModelBuilder` (`src.core.pipelines.model_builder`).
-- **Responsibility**: Instantiates Scikit-Learn transformers and estimator classes based on the validated configuration. Assembles these components into a unified, sequential `sklearn.pipeline.Pipeline`.
+## Why Use Scikit-Learn Pipelines?
 
-### Layer 5: Orchestration & Execution
-
-- **Primary Component**: `Orchestrator` (`src.orchestrator`).
-- **Responsibility**: Serves as the high-level conductor. Controls the execution order (`build()`, `train()`, `test()`, `evaluate()`), ensures data integrity, and finalizes run artifacts via the context manager protocol (`__enter__` / `__exit__`).
+By combining all preprocessing and the model into one `sklearn.pipeline.Pipeline` object:
+1. **Preventing Data Leakage**: Transformers only learn statistics (like column means or category frequencies) during `.fit()` on the training split. During `.predict()`, they apply those learned statistics without peeking at the test set.
+2. **Atomic Serialization**: The entire preprocessing pipeline and trained model can be saved and deployed together as a single artifact in MLflow.
+3. **Reproducibility**: Any future data fed into `pipeline.predict(X_new)` will automatically undergo the exact same cleaning, encoding, and scaling steps.
