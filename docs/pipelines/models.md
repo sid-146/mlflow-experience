@@ -54,7 +54,9 @@ Inside `orchestrator.py`:
 
 ```python
 # 1. Build model step
-model_step = self.model_builder.build()  # Returns [('binary:classification', model_instance)]
+model_step = (
+    self.model_builder.build()
+)  # Returns [('binary:classification', model_instance)]
 
 # 2. Append to pipeline steps
 self.pipeline_steps.extend(model_step)
